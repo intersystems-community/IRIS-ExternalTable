@@ -71,3 +71,27 @@ select top 10 * from extglob.lineitem
 
 
 ```
+
+## loadtest
+
+`loadtest(classname)` routine measures data read time, isolated from SQL engine, 
+by calling ReadNextLine() for the class, until entire dataset is read.
+
+### Test July 1st 2019. Instance m5a.2xlarge, 24GB GloBuf
+```
+USER>do ^loadtest("extglob.orders")
+Reading data from class: extglob.orders
+..#FileName : s3://bigdataantonum/emrdata/orders/orders.tbl
+Time to first line: 29.270293
+Time to last line: 104.584113
+Total records read: 15000000
+Total bytes read: 1734195031
+
+USER>do ^loadtest("extglob.lineitem")
+Reading data from class: extglob.lineitem
+..#FileName : s3://bigdataantonum/emrdata/lineitem/lineitem.tbl
+Time to first line: 128.004969
+Time to last line: 431.200915
+Total records read: 59986052
+Total bytes read: 7715741636
+```
