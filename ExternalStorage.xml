@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="IRIS" version="26" zv="IRIS for Windows (x86-64) 2019.3.0DILW (Build 107U)" ts="2019-07-01 08:44:42">
+<Export generator="IRIS" version="26" zv="IRIS for Windows (x86-64) 2019.3.0DILW (Build 107U)" ts="2019-07-05 23:12:23">
 <Class name="DL.ExternalStorage">
 <Abstract>1</Abstract>
-<TimeChanged>65195,31173.335417</TimeChanged>
+<TimeChanged>65199,82998.829191</TimeChanged>
 <TimeCreated>65194,46820.856861</TimeCreated>
 
 <UDLText name="T">
@@ -23,6 +23,7 @@
 <SqlName>ConvertToExternal</SqlName>
 <SqlProc>1</SqlProc>
 <Implementation><![CDATA[
+
  s classname=tablename //add proper tablename detection
  s tempsourcefile="tempsrc.cls"
  s temptargetfile="temptgt.cls"
@@ -52,7 +53,7 @@
 		 </Data>
 		   */
 	 	 set storageProperties=storageProperties_"<Data name="""_sqlFieldName_""">"_LNBR
-	 	 set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||CSVRow,"""_delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
+	 	 set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(%dlRecord,"""_delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
 	 	 set storageProperties=storageProperties_"</Data>"_LNBR
 	 }
  }
@@ -78,7 +79,7 @@
  "<SQLMap name=""Map1"">"_LNBR
  
  set storageTail=LNBR_
-  "<Global>^||CSVRow</Global>"_LNBR_
+  "<Global>%dlRecord</Global>"_LNBR_
   "<Subscript name=""1"">"_LNBR_
   "<Expression>{RowID}</Expression>"_LNBR_
   "<NextCode>s status=##class({{CLASSNAME}}).ReadNextLine({L1})"_LNBR_
@@ -122,12 +123,14 @@
 <FormalSpec>counter</FormalSpec>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
+	
 	if '$IsObject($g(%dlstream)) {
 		if ..#FileName [ "s3://" {
 		      set tBucket = $p(..#FileName,"/",3) //"deepsee-2018"
               //add non - us-east1 region here
               set tServer = tBucket_".s3.amazonaws.com"
               set tFilename=$p(..#FileName,"/",4,*) // "test.csv"
+              set tFilename=tFilename //_"?response-content-encoding=x-gzip"
               //set tPort = 80
               if '$data(^AWSCredentials) {
 	              set sc=..GetAWSCredentials()
@@ -159,10 +162,13 @@
               set tAuthorization = "AWS "_tAccessKeyId_":"_tSignatureBase64
               //w !,"Authorization: "_tAuthorization
               set tRequest.Authorization = tAuthorization
-              set tURL =  "/"_tFilename
-              //do tRequest.OutputHeaders()
+              //set tRequest.AcceptGzip=0
+              //set sc=tRequest.SetHeader("Accept-Encoding","x-gzip,deflate")
+              //set sc=tRequest.SetHeader("Range","bytes=0-3000")
+              set tURL =  "/"_tFilename //_"?response-content-encoding=x-gzip"
+              do tRequest.OutputHeaders()
               set tSC = tRequest.Get(tURL)
-              //do tRequest.HttpResponse.OutputHeaders()
+              w !,!,!  do tRequest.HttpResponse.OutputHeaders()
               //do tRequest.HttpResponse.OutputToDevice()
               set %dlstream=tRequest.HttpResponse.Data
 		}
@@ -172,8 +178,79 @@
 			Set sc=%dlstream.LinkToFile(..#FileName)
 		}
 		Set %dlstream.LineTerminator=$char(10)
+
+ //Size of the first chunk of data to read
+ #define ChunkZeroSize 8000
+ //Next chunks to read
+ #define ChunkSize 8000
+ //Number of processes to read from S3
+ #define S3Readers 3
+ //Temp Global to hold stream data
+ #define ContentGlobal ...
+
+		kill ^IRISTempDL(..#FileName)
+		set fileSize=%dlstream.Size
+		set ^IRISTempDL(..#FileName,-1,"size")=fileSize
+		
+		if fileSize>$$$ChunkZeroSize {
+				set chunks=(fileSize-$$$ChunkZeroSize)\$$$ChunkSize
+				} 
+		else {
+				set chunks=0
+				}
+		set ^IRISTempDL(..#FileName,-1,"chunks")=chunks
+		set chunk=0
+		set ^IRISTempDL(..#FileName,chunk)=$listfromstring(%dlstream.Read($$$ChunkZeroSize),$c(10))
+		while '%dlstream.AtEnd {
+			set ^IRISTempDL(..#FileName,$i(chunk))=$listfromstring(%dlstream.Read($$$ChunkSize),$c(10))
+		}
+		//zw ^IRISTempDL
+		set %dlChunks=chunks //total # of chunks
+		set %dlChunkNo=0 //current chunk
+		set %dlRecordsInChunk="" //number of records in current chunk
+		set %dlRecordInChunkNo=0 //current record within chunk
+		set %dlTail="" //tail of the record from the prev. chunk
+		
+		//kill %dlstream
+		//do %dlstream.Rewind() 
 	}
-	if '%dlstream.AtEnd {
+	//and of init
+	
+	//no more chunks, empty tail. quit
+	if (%dlChunkNo>%dlChunks)&&(%dlTail=""){
+		kill %dlstream
+		//write "ALL DONE!!!",!
+		//b
+		QUIT ""
+	}
+	
+	//Begining of every chunk
+	if %dlRecordInChunkNo=0 {
+		set %dlChunk=$g(^IRISTempDL(..#FileName,%dlChunkNo),"")
+		//if %dlChunk="" { //the end of file
+		//	s ^||CSVRow=%dlTail
+		//}
+		//w !,"CHUNK # ",%dlChunkNo
+		set %dlRecordsInChunk=$ll(%dlChunk)
+		set %dlRecordInChunkNo=1
+	}
+	
+	//extract record
+	//set line=$li(%dlChunk,%dlRecordInChunkNo)
+	//s ^||CSVRow=%dlTail_line
+	set %dlRecord=%dlTail_$li(%dlChunk,%dlRecordInChunkNo)
+
+	set %dlRecordInChunkNo=%dlRecordInChunkNo+1
+	set %dlTail=""
+	
+	//end of every chunk
+	if %dlRecordInChunkNo=%dlRecordsInChunk {
+		set %dlTail=$li(%dlChunk,%dlRecordInChunkNo)	//read last record, assuming it's a "tail"
+		set %dlChunkNo=%dlChunkNo+1
+		set %dlRecordInChunkNo=0
+	}
+	quit $$$OK
+	/*if '%dlstream.AtEnd {
 		//s counter=$I(counter)
 		Set line=%dlstream.ReadLine()
 		s ^||CSVRow=line
@@ -182,7 +259,7 @@
 	} else {
 		kill %dlstream
 		quit ""
-	}
+	}*/
 ]]></Implementation>
 </Method>
 
