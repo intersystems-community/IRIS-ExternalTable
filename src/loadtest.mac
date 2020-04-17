@@ -1,0 +1,18 @@
+ROUTINE loadtest
+loadtest(classname)
+ 	write "Reading data from class: ", classname,!
+ 	write "..#FileName : ",$parameter(classname,"FileName"),!
+	set ts=$zh
+	do $classmethod(classname,"ReadNextLine",1)
+	write "Time to first line: ",$zh-ts,!
+	set counter=1
+	set totalRead=$l(^||CSVRow)
+	while $classmethod(classname,"ReadNextLine",1) {
+		set counter=counter+1
+		set line=^||CSVRow
+		set totalRead=totalRead+$l(line)
+	}
+	write "Time to last line: ",$zh-ts,!
+	write "Total records read: ", counter,!
+	write "Total bytes read: ", totalRead,!
+	quit
