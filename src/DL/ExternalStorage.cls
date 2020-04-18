@@ -3,10 +3,17 @@ Class DL.ExternalStorage [ Abstract ]
 
 // Parameter FileName = "c:\InterSystems\orders.tbl";
 
-Parameter FileName = "s3://bigdataantonum/emrdata-s/orders/orders.tbl";
+// Parameter FileName = "s3://bigdataantonum/emrdata-s/orders/orders.tbl";
 
-ClassMethod ConvertToExternal(tablename, location, delimiter = ",") As %Status [ SqlName = ConvertToExternal, SqlProc ]
+ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = ConvertToExternal, SqlProc ]
 {
+ //parameters - json document
+ set file=##class(%Stream.FileCharacter).%New()
+ Set sc=file.LinkToFile(parameters)
+ set config={}.%FromJSON(file.Read(32000))
+ 
+ set LNBR=$c(10)
+
  s classname=tablename //add proper tablename detection
  s tempsourcefile="tempsrc.cls"
  s temptargetfile="temptgt.cls"
@@ -15,7 +22,6 @@ ClassMethod ConvertToExternal(tablename, location, delimiter = ",") As %Status [
  Set file=##class(%Stream.FileCharacter).%New()
  Set sc=file.LinkToFile(tempsourcefile)
  kill tmp
- set LNBR=$c(10,13)
  set targetProperties=LNBR
  set storageProperties=LNBR
  while 'file.AtEnd {
@@ -36,33 +42,41 @@ ClassMethod ConvertToExternal(tablename, location, delimiter = ",") As %Status [
 		 </Data>
 		   */
 	 	 set storageProperties=storageProperties_"<Data name="""_sqlFieldName_""">"_LNBR
-	 	 set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||CSVRow,"""_delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
+	 	 //set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||ETRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
+	 	 set storageProperties=storageProperties_"<RetrievalCode>"_$ClassMethod(config.adapter, "GenerateRetrievalCode", config, propertyName,sqlFieldName,sqlColumnNumber)_"</RetrievalCode>"_LNBR
 	 	 set storageProperties=storageProperties_"</Data>"_LNBR
 	 }
  }
  // SqlTableName = ""{{TABLENAME}}"",
  set classHead=""_
- "Class {{CLASSNAME}} Extends (%Persistent, DL.ExternalStorage) [ SqlRowIdPrivate, StorageStrategy = CSVFileStorage ]"_LNBR_
+ "Class {{CLASSNAME}} Extends (%Persistent, DL.ExternalStorage) [ SqlRowIdPrivate, StorageStrategy = ETStorage ]"_LNBR_
   "{"_LNBR_
   "// Parameter FileName = ""c:\directory\file.csv"";"_LNBR_
   "// Parameter FileName = ""s3://bucketname/folder/file.csv"";"_LNBR_
   ""_LNBR_
-  "Parameter FileName = ""{{LOCATION}}"";"_LNBR_
-  ""_LNBR_
+  //"Parameter FileName = ""{{LOCATION}}"";"_LNBR_
+  //""_LNBR_
   "Index Master On RowID [ IdKey, Internal, PrimaryKey, Unique ];"_LNBR_
   ""_LNBR_
   "Property RowID As %Integer [ Internal, Private ];"_LNBR
   set classHead=$replace(classHead,"{{CLASSNAME}}",newClassNamePrefix_classname)
   set classHead=$replace(classHead,"{{TABLENAME}}",tablename)
-  set classHead=$replace(classHead,"{{LOCATION}}",location)
+  //set classHead=$replace(classHead,"{{LOCATION}}",location)
+
+ set methodReadNextLine=
+    LNBR_"ClassMethod ReadNextLine(counter) As %String"_LNBR_
+    "  {"_LNBR_
+    $ClassMethod(config.adapter, "GenerateReadNextLine", config)_LNBR_
+    "  }"_LNBR
+
 
  set storageHead=LNBR_
- "Storage CSVFileStorage"_LNBR_
+ "Storage ETStorage"_LNBR_
  "{"_LNBR_
  "<SQLMap name=""Map1"">"_LNBR
  
- set storageTail=LNBR_
-  "<Global>^||CSVRow</Global>"_LNBR_
+ set storageTail=
+  "<Global>^||ETRow</Global>"_LNBR_
   "<Subscript name=""1"">"_LNBR_
   "<Expression>{RowID}</Expression>"_LNBR_
   "<NextCode>s status=##class({{CLASSNAME}}).ReadNextLine({L1})"_LNBR_
@@ -81,8 +95,12 @@ ClassMethod ConvertToExternal(tablename, location, delimiter = ",") As %Status [
   
   set classTail=LNBR_"}"
  
+
+  
+
  //zw tmp
  //w targetProperties
+ //w methodReadNextLine
  //w storageProperties
  //w storageTail
  
@@ -90,6 +108,7 @@ ClassMethod ConvertToExternal(tablename, location, delimiter = ",") As %Status [
  Do file.Open("WSN")
  Do file.Write(classHead)
  Do file.Write(targetProperties)
+ Do file.Write(methodReadNextLine)
  Do file.Write(storageHead)
  Do file.Write(storageProperties)
  Do file.Write(storageTail)
@@ -100,7 +119,8 @@ ClassMethod ConvertToExternal(tablename, location, delimiter = ",") As %Status [
  quit $$$OK
 }
 
-ClassMethod ReadNextLine(counter) As %String
+/// remove by renaming. to be totally removed in following commits
+ClassMethod ReadNextLineBAK(counter) As %String
 {
 	if '$IsObject($g(%dlstream)) {
 		if ..#FileName [ "s3://" {
