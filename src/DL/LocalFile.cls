@@ -1,11 +1,11 @@
 Class DL.LocalFile [ Abstract ]
 {
 
-ClassMethod ReadNextLine(filename) As %String
+ClassMethod ReadNextLine(location) As %String
 {
   	if '$IsObject($g(%dlstream)) {
         Set %dlstream=##class(%Stream.FileCharacter).%New()
-	    Set sc=%dlstream.LinkToFile($get(^ET.Config("LocalDir"),"")_filename)
+	    Set sc=%dlstream.LinkToFile($get(^ET.Config("LocalDir"),"")_location)
 	    Set %dlstream.LineTerminator=$char(10)
 	}
 	if '%dlstream.AtEnd {
@@ -22,7 +22,7 @@ ClassMethod ReadNextLine(filename) As %String
 
 ClassMethod GenerateReadNextLine(config) As %String
 {
-   quit "    quit ##class(DL.LocalFile).ReadNextLine("""_config.filename_""")"
+   quit "    quit ##class(DL.LocalFile).ReadNextLine("""_config.location_""")"
 }
 
 ClassMethod GenerateRetrievalCode(config, propertyName, sqlFieldName, sqlColumnNumber) As %String

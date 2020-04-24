@@ -1,5 +1,5 @@
 {
     "adapter":"DL.LocalFile",
-    "filename":"test/tpc-h/lineitem.tbl",
+    "location":"test/tpc-h/lineitem.tbl",
     "delimiter": "|"
 }
