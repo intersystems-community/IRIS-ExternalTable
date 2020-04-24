@@ -1,5 +1,5 @@
 {
     "adapter":"DL.LocalFile",
-    "filename":"/ISC/DataLake/TPC/lineitem.tbl",
+    "filename":"test/tpc-h/lineitem.tbl",
     "delimiter": "|"
 }

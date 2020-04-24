@@ -5,7 +5,7 @@ ClassMethod ReadNextLine(filename) As %String
 {
   	if '$IsObject($g(%dlstream)) {
         Set %dlstream=##class(%Stream.FileCharacter).%New()
-	    Set sc=%dlstream.LinkToFile(filename)
+	    Set sc=%dlstream.LinkToFile($get(^ET.Config("LocalDir"),"")_filename)
 	    Set %dlstream.LineTerminator=$char(10)
 	}
 	if '%dlstream.AtEnd {

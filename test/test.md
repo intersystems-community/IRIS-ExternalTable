@@ -2,6 +2,7 @@
 
 ## Local files
 
+set ^ET.Config("LocalDir")="/ISC/Cloud/ExternalTable/IRIS-ExternalTable/"
 do $system.SQL.Shell()
 drop table tst.lineitem
 

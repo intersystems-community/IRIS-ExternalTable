@@ -1,0 +1,5 @@
+{
+    "adapter":"DL.LocalFile",
+    "prefix":"s3://covid19-lake/rearc-covid-19-nyt-data-in-usa/json/us-states/",
+    "type": "json"
+}
