@@ -78,6 +78,9 @@ int1 INT,
 float1 DOUBLE, 
 field2 varchar(50))
 go 
- -- convert table to file-based external
-call DL.ConvertToExternal('tst.multifile','/ISC/Cloud/ExternalTable/IRIS-ExternalTable/test/multifile.json')
+ -- convert table to file-based external Google Cloud
+call DL.ConvertToExternal('tst.multifile','/ISC/Cloud/ExternalTable/IRIS-ExternalTable/test/multifile-gs.json')
+select * from exttst.multifile 
+ -- convert table to file-based external AWS S3
+call DL.ConvertToExternal('tst.multifile','/ISC/Cloud/ExternalTable/IRIS-ExternalTable/test/multifile-s3.json')
 select * from exttst.multifile

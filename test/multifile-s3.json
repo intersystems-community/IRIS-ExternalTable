@@ -1,0 +1,5 @@
+{
+    "adapter":"DL.AWSS3",
+    "location":"s3://iris-external-table/",
+    "delimiter": ","
+}
