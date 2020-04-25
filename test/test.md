@@ -70,5 +70,14 @@ where
 group by l_shipmode
 order by l_shipmode
 go
+ --
 
-
+create table tst.multifile 
+(field1 varchar(50), 
+int1 INT, 
+float1 DOUBLE, 
+field2 varchar(50))
+go 
+ -- convert table to file-based external
+call DL.ConvertToExternal('tst.multifile','/ISC/Cloud/ExternalTable/IRIS-ExternalTable/test/multifile.json')
+select * from exttst.multifile
