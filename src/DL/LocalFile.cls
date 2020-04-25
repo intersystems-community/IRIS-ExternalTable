@@ -58,7 +58,7 @@ ClassMethod GetFileList(location) As %Status
 
 ClassMethod GenerateReadNextLine(config) As %String
 {
-   quit "    quit ##class(DL.LocalFile).ReadNextLine("""_config.location_""")"
+   quit "    quit ##class("_$classname()_").ReadNextLine("""_config.location_""")"
 }
 
 ClassMethod GenerateRetrievalCode(config, propertyName, sqlFieldName, sqlColumnNumber) As %String
