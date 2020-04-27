@@ -84,3 +84,6 @@ select * from exttst.multifile
  -- convert table to file-based external AWS S3
 call DL.ConvertToExternal('tst.multifile','/ISC/Cloud/ExternalTable/IRIS-ExternalTable/test/multifile-s3.json')
 select * from exttst.multifile
+ -- convert table to file-based external Azure Storage Bucket
+call DL.ConvertToExternal('tst.multifile','/ISC/Cloud/ExternalTable/IRIS-ExternalTable/test/multifile-azure.json')
+select * from exttst.multifile

@@ -15,7 +15,7 @@ Than convert it to "External" table
 ```sql
 CALL DL.ConvertToExternal('test.table1','<path-to>/multifile-gs.json')
 ```
-Where multifile-gs.json is:
+Where `multifile-gs.json` is:
 ```json
 {
     "adapter":"DL.GoogleStorage",
@@ -29,4 +29,5 @@ Supported adapters:
 - DL.LocalFile
 - DL.AWSS3
 - DL.GoogleStorage
+- DL.Azure
 

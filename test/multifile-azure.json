@@ -1,0 +1,5 @@
+{
+    "adapter":"DL.Azure",
+    "location":"https://webtestanton.blob.core.windows.net/chromecast/",
+    "delimiter": ","
+}
