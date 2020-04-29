@@ -22,6 +22,7 @@ ClassMethod ReadNextLine(location) As %String
 		set %etFileNumber=%etFileNumber+1
 		if %etFileNumber>%etFileList {
 			kill %dlstream
+			kill %etFileList
 			quit ""
 		}
 		do ..GetFileHeader(%etFileList(%etFileNumber))

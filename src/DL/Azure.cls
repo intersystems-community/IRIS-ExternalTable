@@ -34,8 +34,6 @@ ClassMethod GetAccessToken() As %String
     //curl -X POST -d 'grant_type=client_credentials&client_id=[APP_ID]&client_secret=[PASSWORD]&resource=https%3A%2F%2Fmanagement.azure.com%2F' \
     //https://login.microsoftonline.com/[TENANT_ID]/oauth2/token
 
-    //curl -X POST -d 'grant_type=client_credentials&client_id=1922e262-5c5f-4dee-9995-xxxxxxxxx&client_secret=I.og4eqTq.E-ZA?O7zmKEXAMPLE&resource=https%3A%2F%2Fstorage.azure.com%2F' \
-    //https://login.microsoftonline.com/078b93d2-21e7-48b8-8587-TENENATID/oauth2/token
     if '$data(%etAzureAuthToken) {
         
         set server="login.microsoftonline.com" 
@@ -83,11 +81,5 @@ ClassMethod GetFileHeader(filename) As %Status
     Set %dlstream.LineTerminator=$char(10)
 	quit $$$OK
 }
-
-// gsutil ls -l gs://iris-external-table/
-
-// curl -H "Authorization: Bearer $(gcloud auth print-access-token)" \
-
-// "https://storage.googleapis.com/storage/v1/b/chc-api-qwiklabs/o"
 
 }

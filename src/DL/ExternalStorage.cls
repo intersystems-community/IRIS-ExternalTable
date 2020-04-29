@@ -58,7 +58,8 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
   //""_LNBR_
   "Index Master On RowID [ IdKey, Internal, PrimaryKey, Unique ];"_LNBR_
   ""_LNBR_
-  "Property RowID As %Integer [ Internal, Private ];"_LNBR
+  "Property RowID As %Integer [ Internal, Private ];"_LNBR_
+  "Property %PATH As %String;"_LNBR
   set classHead=$replace(classHead,"{{CLASSNAME}}",newClassNamePrefix_classname)
   set classHead=$replace(classHead,"{{TABLENAME}}",tablename)
   //set classHead=$replace(classHead,"{{LOCATION}}",location)
@@ -69,6 +70,11 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
     $ClassMethod(config.adapter, "GenerateReadNextLine", config)_LNBR_
     "  }"_LNBR
 
+
+ set storageProperties=storageProperties_"<Data name=""%PATH"">"_LNBR
+ //set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||ETRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
+ set storageProperties=storageProperties_"<RetrievalCode>s {*}=%etFileList(%etFileNumber)</RetrievalCode>"_LNBR
+ set storageProperties=storageProperties_"</Data>"_LNBR
 
  set storageHead=LNBR_
  "Storage ETStorage"_LNBR_
