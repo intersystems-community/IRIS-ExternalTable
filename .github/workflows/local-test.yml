@@ -1,0 +1,80 @@
+name: CI
+on: 
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - master
+  release:
+    types:
+      - created
+jobs:
+  build:
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        image: [
+          #"store/intersystems/iris-community:2019.4.0.383.0",
+          #"store/intersystems/irishealth-community:2019.4.0.383.0",
+          "store/intersystems/iris-community:2020.1.0.215.0"
+          #"store/intersystems/irishealth-community:2020.1.0.215.0",
+          #"store/intersystems/iris-community:2020.2.0.196.0",
+          #"store/intersystems/irishealth-community:2020.2.0.196.0"
+        ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - name: Run IRIS container
+        timeout-minutes: 5
+        run: |
+            docker run --init --rm -d -v $GITHUB_WORKSPACE/:/home/irisowner/git ${{ matrix.image }}
+            CONTAINER=`docker ps -lq`
+            while [ "`docker container inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do echo Waiting container; sleep 1; done
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              'set ^ET.Config("LocalDir")="/home/irisowner/git/"'
+              'write $zv\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS
+      - name: Load code
+        timeout-minutes: 1
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              'set sc = ##class(%SYSTEM.OBJ).LoadDir("/home/irisowner/git/src", "ck",,1)\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS
+      - name: Test localfiles.sql
+        timeout-minutes: 1
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              's sc= ##class(Test.SQLRunner).RunSQLFile("test/sql/localfiles.sql")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
+      - name: Test local-tcp-h.sql
+        timeout-minutes: 1
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              's sc= ##class(Test.SQLRunner).RunSQLFile("test/sql/local-tcp-h.sql")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
+      
+      - name: Stop IRIS container
+        timeout-minutes: 2
+        run: |
+             CONTAINER=`docker ps -lq`
+             docker stop $CONTAINER
+
