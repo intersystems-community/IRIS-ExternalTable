@@ -1,10 +1,6 @@
 Class DL.ExternalStorage [ Abstract ]
 {
 
-// Parameter FileName = "c:\InterSystems\orders.tbl";
-
-// Parameter FileName = "s3://bigdataantonum/emrdata-s/orders/orders.tbl";
-
 ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = ConvertToExternal, SqlProc ]
 {
  //parameters - json document
@@ -49,7 +45,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  }
  // SqlTableName = ""{{TABLENAME}}"",
  set classHead=""_
- "Class {{CLASSNAME}} Extends (%Persistent, DL.ExternalStorage) [ SqlRowIdPrivate, StorageStrategy = ETStorage ]"_LNBR_
+ "Class {{CLASSNAME}} Extends (%Persistent, DL.ExternalStorage) [ SqlRowIdPrivate, DdlAllowed, StorageStrategy = ETStorage ]"_LNBR_
   "{"_LNBR_
   "Parameter ExternalTableParameters = """_parameters_""";"_LNBR_
   "Parameter ExternalTableLocation = """_config.location_""";"_LNBR_
