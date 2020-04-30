@@ -9,7 +9,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
 {
  //parameters - json document
  set file=##class(%Stream.FileCharacter).%New()
- Set sc=file.LinkToFile(parameters)
+ Set sc=file.LinkToFile($get(^ET.Config("LocalDir"),"")_parameters)
  set config={}.%FromJSON(file.Read(32000))
  
  set LNBR=$c(10)
@@ -51,15 +51,15 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  set classHead=""_
  "Class {{CLASSNAME}} Extends (%Persistent, DL.ExternalStorage) [ SqlRowIdPrivate, StorageStrategy = ETStorage ]"_LNBR_
   "{"_LNBR_
-  "// Parameter FileName = ""c:\directory\file.csv"";"_LNBR_
-  "// Parameter FileName = ""s3://bucketname/folder/file.csv"";"_LNBR_
+  "Parameter ExternalTableParameters = """_parameters_""";"_LNBR_
+  "Parameter ExternalTableLocation = """_config.location_""";"_LNBR_
   ""_LNBR_
   //"Parameter FileName = ""{{LOCATION}}"";"_LNBR_
   //""_LNBR_
   "Index Master On RowID [ IdKey, Internal, PrimaryKey, Unique ];"_LNBR_
   ""_LNBR_
   "Property RowID As %Integer [ Internal, Private ];"_LNBR_
-  "Property %PATH As %String;"_LNBR
+  "Property %PATH As %String [ Private ];"_LNBR
   set classHead=$replace(classHead,"{{CLASSNAME}}",newClassNamePrefix_classname)
   set classHead=$replace(classHead,"{{TABLENAME}}",tablename)
   //set classHead=$replace(classHead,"{{LOCATION}}",location)
@@ -72,7 +72,6 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
 
 
  set storageProperties=storageProperties_"<Data name=""%PATH"">"_LNBR
- //set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||ETRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
  set storageProperties=storageProperties_"<RetrievalCode>s {*}=%etFileList(%etFileNumber)</RetrievalCode>"_LNBR
  set storageProperties=storageProperties_"</Data>"_LNBR
 

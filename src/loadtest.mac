@@ -1,7 +1,8 @@
 ROUTINE loadtest
 loadtest(classname)
  	write "Reading data from class: ", classname,!
- 	write "..#FileName : ",$parameter(classname,"FileName"),!
+ 	write "..#ExternalTableLocation : ",$parameter(classname,"ExternalTableLocation"),!
+ 	write "..#ExternalTableParameters : ",$parameter(classname,"ExternalTableParameters"),!
 	set ts=$zh
 	do $classmethod(classname,"ReadNextLine",1)
 	write "Time to first line: ",$zh-ts,!
