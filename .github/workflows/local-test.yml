@@ -37,7 +37,7 @@ jobs:
             while [ "`docker container inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do echo Waiting container; sleep 1; done
             /bin/echo -e '' \
               'ZN "USER"\n' \
-              'set ^ET.Config("LocalDir")="/home/irisowner/git/"'
+              'set ^ET.Config("LocalDir")="/home/irisowner/git/"' \
               'write $zv\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS
@@ -57,7 +57,7 @@ jobs:
             CONTAINER=`docker ps -lq`
             /bin/echo -e '' \
               'ZN "USER"\n' \
-              's sc= ##class(Test.SQLRunner).RunSQLFile("test/sql/localfiles.sql")\n' \
+              'set sc = ##class(Test.SQLRunner).RunSQLFile("test/sql/localfiles.sql")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
@@ -67,7 +67,7 @@ jobs:
             CONTAINER=`docker ps -lq`
             /bin/echo -e '' \
               'ZN "USER"\n' \
-              's sc= ##class(Test.SQLRunner).RunSQLFile("test/sql/local-tcp-h.sql")\n' \
+              'set sc = ##class(Test.SQLRunner).RunSQLFile("test/sql/local-tcp-h.sql")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
