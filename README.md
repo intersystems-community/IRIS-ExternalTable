@@ -1,5 +1,7 @@
 # IRIS External Table
 
+![CI](https://github.com/antonum/IRIS-ExternalTable/workflows/CI/badge.svg)
+
 ## Usage
 
 Create table as usual:
