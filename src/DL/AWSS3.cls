@@ -3,11 +3,21 @@ Class DL.AWSS3 Extends DL.LocalFile
 
 ClassMethod GetAWSCredentials() As %Status
 {
+    set request = ##class(%Net.HttpRequest).%New()                         
+    set request.Server = "169.254.169.254"       
+    set sc = request.Get("/latest/meta-data/iam/security-credentials/")
+    set role=request.HttpResponse.Data.ReadLine()
+    set sc = request.Get("/latest/meta-data/iam/security-credentials/"_role)
+    set json=request.HttpResponse.Data.Read(32000)
+    set jsonobject={}.%FromJSON(json)
+    set ^AWSCredentials("AccessKeyId")=jsonobject.AccessKeyId
+    set ^AWSCredentials("SecretAccessKey")=jsonobject.SecretAccessKey
+    set ^AWSCredentials("Token")=jsonobject.Token
  //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/
  //S3-AdminAccess
  //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/S3-AdminAccess
  //do ^initAWS
- quit $$$OK
+    quit $$$OK
 }
 
 ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
@@ -24,8 +34,12 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     set request.Date = tDate
     set tContentMD5 = ""
     set tContentType = ""
+    set tToken=""
+    if $d(^AWSCredentials("Token")) {
+        set tToken="x-amz-security-token:"_^AWSCredentials("Token")_$c(10)
+    }
     //set tStringToSign = "GET"_$C(10)_tContentMD5_$C(10)_tContentType_$C(10)_tDate_$C(10)_"/"_bucket_"/"_key
-    set tStringToSign = $p(requeststring," ",1)_$C(10)_tContentMD5_$C(10)_tContentType_$C(10)_tDate_$C(10)_$p(requeststring," ",2)
+    set tStringToSign = $p(requeststring," ",1)_$C(10)_tContentMD5_$C(10)_tContentType_$C(10)_tDate_$C(10)_tToken_$p(requeststring," ",2)
     
     //w !,"StringToSign (before UTF-8 conversion): "_tStringToSign
     set tStringToSignUTF8 = $ZCONVERT(tStringToSign,"O","UTF8")
@@ -37,6 +51,9 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     set tAuthorization = "AWS "_tAccessKeyId_":"_tSignatureBase64
     //w !,"Authorization: "_tAuthorization
     set request.Authorization=tAuthorization
+    if $d(^AWSCredentials("Token")) {
+        do request.SetHeader("X-Amz-Security-Token",^AWSCredentials("Token"))
+    }
     quit $$$OK
 }
 
