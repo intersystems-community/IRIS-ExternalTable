@@ -6,7 +6,7 @@ ClassMethod GetAWSCredentials() As %Status
  //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/
  //S3-AdminAccess
  //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/S3-AdminAccess
- do ^initAWS
+ //do ^initAWS
  quit $$$OK
 }
 
@@ -68,7 +68,13 @@ ClassMethod GetFileHeader(filename) As %Status
 ClassMethod GetFileList(location) As %Status
 {
     kill %etFileList
-    //s3://iris-external-table/file3.csv
+    //s3://iris-external-table/
+    if $Extract(location,$Length(location))'="/" {
+        //if location does not end with '/' consider it the single file
+        set %etFileList=1
+        set %etFileList(1)=location
+        quit $$$OK
+    }
     set bucket = $p(location,"/",3) 
     set key=$p(location,"/",4,*) 
     set object="/"_bucket_"/"_key
