@@ -1,32 +1,67 @@
 Class DL.AWSS3 Extends DL.LocalFile
 {
 
-ClassMethod GetAWSCredentials() As %Status
+ClassMethod GetAWSCredentials(profile = "default") As %Status
 {
-    set request = ##class(%Net.HttpRequest).%New()                         
-    set request.Server = "169.254.169.254"       
-    set sc = request.Get("/latest/meta-data/iam/security-credentials/")
-    set role=request.HttpResponse.Data.ReadLine()
-    set sc = request.Get("/latest/meta-data/iam/security-credentials/"_role)
-    set json=request.HttpResponse.Data.Read(32000)
-    set jsonobject={}.%FromJSON(json)
-    set ^AWSCredentials("AccessKeyId")=jsonobject.AccessKeyId
-    set ^AWSCredentials("SecretAccessKey")=jsonobject.SecretAccessKey
-    set ^AWSCredentials("Token")=jsonobject.Token
  //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/
  //S3-AdminAccess
  //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/S3-AdminAccess
- //do ^initAWS
-    quit $$$OK
+    set useInstanceMetadata=0
+    if (useInstanceMetadata) {
+        set request = ##class(%Net.HttpRequest).%New()                         
+        set request.Server = "169.254.169.254"       
+        set sc = request.Get("/latest/meta-data/iam/security-credentials/")
+        set role=request.HttpResponse.Data.ReadLine()
+        set sc = request.Get("/latest/meta-data/iam/security-credentials/"_role)
+        set json=request.HttpResponse.Data.Read(32000)
+        set jsonobject={}.%FromJSON(json)
+        set %etAWS("AccessKeyId")=jsonobject.AccessKeyId
+        set %etAWS("SecretAccessKey")=jsonobject.SecretAccessKey
+        set %etAWS("Token")=jsonobject.Token
+    }
+    set useCredentialsFile=1
+    if (useCredentialsFile) {
+        set file=##class(%Stream.FileCharacter).%New()
+        Set sc=file.LinkToFile($system.Util.GetEnviron("HOME")_"/.aws/credentials")
+        //for now just take first/default keypair
+        //TODO: parse file and extract "profile" key
+        //TODO: adjust for Windows
+        /*
+            [default]
+            aws_access_key_id = AKIAIAEXAMPLEKEY
+            aws_secret_access_key = 1234567890aaaaabbbbccccc
+        */
+        set line=file.ReadLine()      
+        set line=file.ReadLine()
+        set keyId=$p(line," = ",2)
+        set line=file.ReadLine()
+        set keySecret=$p(line," = ",2)
+
+        set %etAWS("AccessKeyId")=keyId
+        set %etAWS("SecretAccessKey")=keySecret
+        //set %etAWS("Token")=jsonobject.Token
+    }
+    set useEnvVar=0
+    if (useEnvVar) {
+        //https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
+        set %etAWS("AccessKeyId")=$system.Util.GetEnviron("AWS_ACCESS_KEY_ID")
+        set %etAWS("SecretAccessKey")=$system.Util.GetEnviron("AWS_SECRET_ACCESS_KEY")
+        set token=$system.Util.GetEnviron("AWS_SESSION_TOKEN")
+        if token'="" { //set token variable only if token present
+            set %etAWS("Token")=token
+        }
+        //=jsonobject.Token
+    }
+   quit $$$OK
 }
 
 ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
 {
-    if '$data(^AWSCredentials) {
+    if '$data(%etAWS) {
 	    set sc=..GetAWSCredentials()
 	}
-    set tAccessKeyId =^AWSCredentials("AccessKeyId")
-    set tSecretAccessKey = ^AWSCredentials("SecretAccessKey")
+    set tAccessKeyId =%etAWS("AccessKeyId")
+    set tSecretAccessKey = %etAWS("SecretAccessKey")
     set tDateH = $ZTS
     set tWeekDay = $P($ZDT(tDateH,11)," ",1)
     set tDate = tWeekDay_", "_$ZDT(tDateH,2,1)_" GMT"
@@ -36,7 +71,7 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     set tContentType = ""
     set tToken=""
     if $d(^AWSCredentials("Token")) {
-        set tToken="x-amz-security-token:"_^AWSCredentials("Token")_$c(10)
+        set tToken="x-amz-security-token:"_%etAWS("Token")_$c(10)
     }
     //set tStringToSign = "GET"_$C(10)_tContentMD5_$C(10)_tContentType_$C(10)_tDate_$C(10)_"/"_bucket_"/"_key
     set tStringToSign = $p(requeststring," ",1)_$C(10)_tContentMD5_$C(10)_tContentType_$C(10)_tDate_$C(10)_tToken_$p(requeststring," ",2)
@@ -51,8 +86,8 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     set tAuthorization = "AWS "_tAccessKeyId_":"_tSignatureBase64
     //w !,"Authorization: "_tAuthorization
     set request.Authorization=tAuthorization
-    if $d(^AWSCredentials("Token")) {
-        do request.SetHeader("X-Amz-Security-Token",^AWSCredentials("Token"))
+    if $d(%etAWS("Token")) {
+        do request.SetHeader("X-Amz-Security-Token",%etAWS("Token"))
     }
     quit $$$OK
 }
