@@ -51,10 +51,10 @@ ClassMethod ExecuteSQL(ByRef sql, position)
     write !, "STATEMENT: ",statement
     set ts=$zh
     set result=$system.SQL.Execute(.sql)
-    write !,"TOTAL TIME: ",$zh-ts
     write !,"SQLCODE: ",result.%SQLCODE
-    write !
+    write !,"RESULT: ",!
     do result.%Display()
+    write !,"TOTAL TIME: ",$zh-ts
     write !
     if result.%SQLCODE>=0 {
         quit $$$OK

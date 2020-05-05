@@ -4,6 +4,7 @@ Class DL.GoogleStorage Extends DL.LocalFile
 ClassMethod GetFileList(location) As %Status
 {
     kill %etFileList
+    //curl -H "Authorization: Bearer $TOKEN" "https://storage.googleapis.com/storage/v1/b/iris-external-table/o?prefix="
     set tmpfilename="gsutil_ls.txt" //##class(%File).TempFilename()
     set args=2
     set args(1)="ls"
@@ -33,7 +34,7 @@ ClassMethod GetAccessToken() As %String
         set file=""
         set sc=##class(%File).Delete(tmpfilename)
     }
-    //set token="ya29.a0Ae4lvC2kVLQOM_kUOjwOb9fdppgAWyTeBXpT8UKd4P1frUMKFcujlLwdBVlgGwSMGSTyYvvOA5i27-CQxK0tIcHVjwbKiYSrdhNPeeyw3hmVWt5g0w1eY7YliS3CM4hB1QdbfVufG2by95Kjk2Vo8C7-1ddfwtthmgt_ZUhoZSgM"
+    //curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
     quit " Bearer "_%etGoogleAuthToken
 }
 

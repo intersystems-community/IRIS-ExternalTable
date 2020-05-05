@@ -69,10 +69,11 @@ ClassMethod GetFileHeader(filename) As %Status
     set request.Server = server       
     set request.Https=1                                 
     set request.SSLConfiguration="ISC.FeatureTracker.SSL.Config"
-    set requeststring="GET "_"/"_bucket_"/"_key
+    //set request.ContentEncoding="x-gzip"
+    set requeststring="GET "_"/"_bucket_"/"_key //_"?response-content-encoding=x-gzip&response-content-type=text/plain"
     set sc= ..AWSSignRequest(request,requeststring)
 
-    set url =  "/"_key
+    set url =  "/"_key //_"?response-content-encoding=x-gzip&response-content-type=text/plain"
     //do request.OutputHeaders()
     set sc = request.Get(url)
     //do request.HttpResponse.OutputHeaders()

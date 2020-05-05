@@ -17,8 +17,6 @@ Than convert it to "External" table
 ```sql
 CALL DL.ConvertToExternal('test.table1','<path-to>/multifile-gs.json')
 ```
-Note: currently for debugging reason we create new class/table by adding `ext` prefix to the table name so `test.table1` becames `exttest.table1`.
-
 Where `multifile-gs.json` is:
 ```json
 {

@@ -34,6 +34,10 @@ ClassMethod GetAccessToken() As %String
     //curl -X POST -d 'grant_type=client_credentials&client_id=[APP_ID]&client_secret=[PASSWORD]&resource=https%3A%2F%2Fmanagement.azure.com%2F' \
     //https://login.microsoftonline.com/[TENANT_ID]/oauth2/token
 
+    //on the Azure instance you can use metadata. "Identity" should be enabled
+    //curl -H Metadata:true 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/'
+
+
     if '$data(%etAzureAuthToken) {
         
         set server="login.microsoftonline.com" 
