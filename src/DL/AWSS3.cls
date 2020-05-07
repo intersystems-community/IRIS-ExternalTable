@@ -3,11 +3,21 @@ Class DL.AWSS3 Extends DL.LocalFile
 
 ClassMethod GetAWSCredentials(profile = "default") As %Status
 {
- //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/
- //S3-AdminAccess
- //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/S3-AdminAccess
     set useInstanceMetadata=0
+    set useCredentialsFile=0
+    set useEnvVar=0
+    if $system.Util.GetEnviron("AWS_ACCESS_KEY_ID")'="" {
+        set useEnvVar=1
+    } elseif ##class(%File).Exists($system.Util.GetEnviron("HOME")_"/.aws/credentials") {
+        set useCredentialsFile=1
+    } else {
+        set useInstanceMetadata=1
+    }
+
     if (useInstanceMetadata) {
+        //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/
+        //S3-AdminAccess
+        //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/S3-AdminAccess
         set request = ##class(%Net.HttpRequest).%New()                         
         set request.Server = "169.254.169.254"       
         set sc = request.Get("/latest/meta-data/iam/security-credentials/")
@@ -17,9 +27,12 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
         set jsonobject={}.%FromJSON(json)
         set %etAWS("AccessKeyId")=jsonobject.AccessKeyId
         set %etAWS("SecretAccessKey")=jsonobject.SecretAccessKey
-        set %etAWS("Token")=jsonobject.Token
+        if jsonobject.Token'="" {
+            set %etAWS("Token")=jsonobject.Token
+        }
+        //TODO: deal with credentials expiration
+        //"Expiration" : "2020-05-06T02:35:43Z"
     }
-    set useCredentialsFile=1
     if (useCredentialsFile) {
         set file=##class(%Stream.FileCharacter).%New()
         Set sc=file.LinkToFile($system.Util.GetEnviron("HOME")_"/.aws/credentials")
@@ -36,12 +49,15 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
         set keyId=$p(line," = ",2)
         set line=file.ReadLine()
         set keySecret=$p(line," = ",2)
+        set line=file.ReadLine()
+        set token=$p(line," = ",2)
 
         set %etAWS("AccessKeyId")=keyId
         set %etAWS("SecretAccessKey")=keySecret
-        //set %etAWS("Token")=jsonobject.Token
+        if token'="" { //set token variable only if token present
+           set %etAWS("Token")=token
+        }
     }
-    set useEnvVar=0
     if (useEnvVar) {
         //https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
         set %etAWS("AccessKeyId")=$system.Util.GetEnviron("AWS_ACCESS_KEY_ID")
@@ -50,7 +66,6 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
         if token'="" { //set token variable only if token present
             set %etAWS("Token")=token
         }
-        //=jsonobject.Token
     }
    quit $$$OK
 }
@@ -70,7 +85,7 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     set tContentMD5 = ""
     set tContentType = ""
     set tToken=""
-    if $d(^AWSCredentials("Token")) {
+    if $d(%etAWS("Token")) {
         set tToken="x-amz-security-token:"_%etAWS("Token")_$c(10)
     }
     //set tStringToSign = "GET"_$C(10)_tContentMD5_$C(10)_tContentType_$C(10)_tDate_$C(10)_"/"_bucket_"/"_key
