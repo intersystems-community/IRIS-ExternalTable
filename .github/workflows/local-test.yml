@@ -41,6 +41,7 @@ jobs:
               'write $zv\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS
+
       - name: Load code
         timeout-minutes: 1
         run: |
@@ -61,6 +62,7 @@ jobs:
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
+
       - name: Test local-tcp-h.sql
         timeout-minutes: 1
         run: |
@@ -71,7 +73,31 @@ jobs:
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
-      
+
+      - name: Test Package Manager install
+        timeout-minutes: 2
+        run: |
+            CONTAINER=`docker ps -lq`
+            #apk add curl
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              'set args=3\n' \
+              'set args(1)="-O"\n' \
+              'set args(2)="zpm.xml"\n' \
+              'set args(3)="https://pm.community.intersystems.com/packages/zpm/latest/installer"\n' \
+              'set sc=$zf(-100,"","wget",.args)\n' \
+              'set sc = $system.OBJ.Load("zpm.xml","c")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'set sc = $system.OBJ.DeletePackage("DL")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'zpm\n' \
+              'load /home/irisowner/git\n' \
+              'quit\n' \
+              'set sc = $system.OBJ.CompilePackage("DL")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
+     
       - name: Stop IRIS container
         timeout-minutes: 2
         run: |
