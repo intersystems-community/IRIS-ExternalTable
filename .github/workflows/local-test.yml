@@ -75,7 +75,7 @@ jobs:
             | docker exec -i $CONTAINER iris session iris -U%SYS     
 
       - name: Test Package Manager install
-        timeout-minutes: 3
+        timeout-minutes: 2
         run: |
             CONTAINER=`docker ps -lq`
             #apk add curl
@@ -91,7 +91,7 @@ jobs:
               'set sc = $system.OBJ.DeletePackage("DL")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'zpm\n' \
-              'load /home/irisowner/git' \
+              'load /home/irisowner/git\n' \
               'quit\n' \
               'set sc = $system.OBJ.CompilePackage("DL")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
