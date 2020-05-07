@@ -41,6 +41,7 @@ jobs:
               'write $zv\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS
+
       - name: Load code
         timeout-minutes: 1
         run: |
@@ -61,10 +62,23 @@ jobs:
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
+
+      - name: Test local-tcp-h.sql
+        timeout-minutes: 1
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              'set sc = ##class(Test.SQLRunner).RunSQLFile("test/sql/local-tpc-h.sql")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
+
       - name: Test Package Manager install
         timeout-minutes: 3
         run: |
             CONTAINER=`docker ps -lq`
+            apk add curl
             /bin/echo -e '' \
               'ZN "USER"\n' \
               'set args=3\n' \
@@ -83,17 +97,7 @@ jobs:
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
-      - name: Test local-tcp-h.sql
-        timeout-minutes: 1
-        run: |
-            CONTAINER=`docker ps -lq`
-            /bin/echo -e '' \
-              'ZN "USER"\n' \
-              'set sc = ##class(Test.SQLRunner).RunSQLFile("test/sql/local-tpc-h.sql")\n' \
-              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
-              'halt\n' \
-            | docker exec -i $CONTAINER iris session iris -U%SYS     
-      
+     
       - name: Stop IRIS container
         timeout-minutes: 2
         run: |
