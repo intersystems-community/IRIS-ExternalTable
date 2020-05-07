@@ -67,10 +67,14 @@ jobs:
             CONTAINER=`docker ps -lq`
             /bin/echo -e '' \
               'ZN "USER"\n' \
-              'set sc = $system.OBJ.DeletePackage("DL")\n' \
-              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
-              '!curl -o zpm.xml https://pm.community.intersystems.com/packages/zpm/latest/installer\n' \
+              'set args=3\n' \
+              'set args(1)="-o"\n' \
+              'set args(2)="zpm.xml"\n' \
+              'set args(3)="https://pm.community.intersystems.com/packages/zpm/latest/installer"\n' \
+              'set sc=$zf(-100,"","curl",.args)\n' \
               'set sc = $system.OBJ.Load("zpm.xml","c")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'set sc = $system.OBJ.DeletePackage("DL")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'zpm\n' \
               'load /home/irisowner/git' \
