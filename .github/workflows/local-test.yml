@@ -67,7 +67,9 @@ jobs:
             CONTAINER=`docker ps -lq`
             /bin/echo -e '' \
               'ZN "USER"\n' \
-              '!curl -o zpm.xml https://pm.community.intersystems.com/packages/zpm/latest/installer\n'
+              'set sc = $system.OBJ.DeletePackage("DL")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              '!curl -o zpm.xml https://pm.community.intersystems.com/packages/zpm/latest/installer\n' \
               'set sc = $system.OBJ.Load("zpm.xml","c")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'zpm\n' \
