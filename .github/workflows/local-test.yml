@@ -78,14 +78,14 @@ jobs:
         timeout-minutes: 3
         run: |
             CONTAINER=`docker ps -lq`
-            apk add curl
+            #apk add curl
             /bin/echo -e '' \
               'ZN "USER"\n' \
               'set args=3\n' \
-              'set args(1)="-o"\n' \
+              'set args(1)="-O"\n' \
               'set args(2)="zpm.xml"\n' \
               'set args(3)="https://pm.community.intersystems.com/packages/zpm/latest/installer"\n' \
-              'set sc=$zf(-100,"","curl",.args)\n' \
+              'set sc=$zf(-100,"","wget",.args)\n' \
               'set sc = $system.OBJ.Load("zpm.xml","c")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'set sc = $system.OBJ.DeletePackage("DL")\n' \
