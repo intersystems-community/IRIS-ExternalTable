@@ -61,6 +61,22 @@ jobs:
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
+      - name: Test Package Manager install
+        timeout-minutes: 3
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              '!curl -o zpm.xml https://pm.community.intersystems.com/packages/zpm/latest/installer\n'
+              'set sc = $system.OBJ.Load("zpm.xml","c")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'zpm\n' \
+              'load /home/irisowner/git' \
+              'quit\n' \
+              'set sc = $system.OBJ.CompilePackage("DL")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
       - name: Test local-tcp-h.sql
         timeout-minutes: 1
         run: |
