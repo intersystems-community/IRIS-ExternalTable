@@ -1,7 +1,7 @@
 Class DL.LocalFile [ Abstract ]
 {
 
-ClassMethod GetFileHeader(filename) As %Status
+ClassMethod GetFileHeader(filename, classname = "") As %Status
 {
 	Set %dlstream=##class(%Stream.FileCharacter).%New()
 	Set sc=%dlstream.LinkToFile(filename)
@@ -9,14 +9,28 @@ ClassMethod GetFileHeader(filename) As %Status
 	quit $$$OK
 }
 
-ClassMethod ReadNextLine(location) As %String
+ClassMethod SkipHeaders(classname)
+{
+	if classname'="" {
+		set config={}.%FromJSON($replace($Parameter(classname,"ExternalTableParameters"),"'",""""))
+		if config.skipHeaders'="" {
+			for i=1:1:config.skipHeaders { 
+				set line=%dlstream.ReadLine() 
+			}
+		}
+	}
+	quit $$$OK
+}
+
+ClassMethod ReadNextLine(location, classname = "") As %String
 {
   	if '$IsObject($g(%dlstream)) {
 		if '$data(%etFileList) {
 			do ..GetFileList(location)
 		}
 		set %etFileNumber=1
-		do ..GetFileHeader(%etFileList(%etFileNumber))
+		do ..GetFileHeader(%etFileList(%etFileNumber),classname)
+		do ..SkipHeaders(classname)
 	}
 	if %dlstream.AtEnd {
 		set %etFileNumber=%etFileNumber+1
@@ -25,17 +39,18 @@ ClassMethod ReadNextLine(location) As %String
 			kill %etFileList
 			quit ""
 		}
-		do ..GetFileHeader(%etFileList(%etFileNumber))
+		do ..GetFileHeader(%etFileList(%etFileNumber),classname)
+		do ..SkipHeaders(classname)
 	}
 	if '%dlstream.AtEnd {
-		Set line=%dlstream.ReadLine()
+		set line=%dlstream.ReadLine()
 		s ^||ETRow=line
 		quit $$$OK
 	}
 }
 
 /// method would initialize list of files in %etFileList array
-ClassMethod GetFileList(location) As %Status
+ClassMethod GetFileList(location, classname = "") As %Status
 {
    kill %etFileList
    
@@ -57,15 +72,15 @@ ClassMethod GetFileList(location) As %Status
    quit $$$OK
 }
 
-ClassMethod GenerateReadNextLine(config) As %String
+ClassMethod GenerateReadNextLine(config, classname = "") As %String
 {
    if config.type="jsonlines" {
-	   set code="    set res = ##class("_$classname()_").ReadNextLine("""_config.location_""")"_$c(10)_
+	   set code="    set res = ##class("_$classname()_").ReadNextLine("""_config.location_""","""_classname_""")"_$c(10)_
 				"    set %jsonline={}.%FromJSON(^||ETRow)"_$c(10)_
 				"    quit res"
    } else { 
 	   //default to CSV 
-	   set code="    quit ##class("_$classname()_").ReadNextLine("""_config.location_""")"
+	   set code="    quit ##class("_$classname()_").ReadNextLine("""_config.location_""","""_classname_""")"
    }
    quit code
 }

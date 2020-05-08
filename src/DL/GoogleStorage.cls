@@ -38,7 +38,7 @@ ClassMethod GetAccessToken() As %String
     quit " Bearer "_%etGoogleAuthToken
 }
 
-ClassMethod GetFileHeader(filename) As %Status
+ClassMethod GetFileHeader(filename, classname = "") As %Status
 {
 	//curl -H "Authorization: Bearer $(gcloud auth print-access-token)" \
     //"https://storage.googleapis.com/download/storage/v1/b/<bucket>/o/<key>?alt=media"

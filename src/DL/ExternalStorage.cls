@@ -76,7 +76,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  set methodReadNextLine=
     LNBR_"ClassMethod ReadNextLine(counter) As %String"_LNBR_
     "  {"_LNBR_
-    $ClassMethod(config.adapter, "GenerateReadNextLine", config)_LNBR_
+    $ClassMethod(config.adapter, "GenerateReadNextLine", config, classname)_LNBR_
     "  }"_LNBR
 
 
