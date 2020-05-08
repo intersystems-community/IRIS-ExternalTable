@@ -1,8 +1,21 @@
 # Testing in IRIS SQL Shell
 
-## Local files
+## Test SQL files
 
-set ^ET.Config("LocalDir")="/ISC/Cloud/ExternalTable/IRIS-ExternalTable/"
+`test/sql/` directory of the repository contains multiple files that can be used for automated testing.
+
+To run a test file use:
+```
+USER>s sc= ##class(Test.SQLRunner).RunSQLFile("test/sql/localfiles.sql")
+```
+## GitHub Actions
+
+`.gitgub/workflows/` directory contains GitHub Actions workflow https://github.com/antonum/IRIS-ExternalTable/actions, executed on every github pull and involves some of the SQL tests from the `test/sql/`  above.
+
+## SQL Shell
+
+```sql
+set ^ET.Config("LocalDir")="/Users/anton/IRIS-ExternalTable/"
 do $system.SQL.Shell()
 drop table tst.lineitem
 
@@ -25,8 +38,8 @@ L_SHIPMODE varchar(50),
 L_COMMENT varchar(150))
 go
  -- convert table to file-based external
-call DL.ConvertToExternal('tst.lineitem','/ISC/Cloud/ExternalTable/IRIS-ExternalTable/test/lineitem.json')
-select l_shipmode,count(*) from exttst.lineitem group by l_shipmode
+call DL.ConvertToExternal('tst.lineitem','test/lineitem.json')
+select l_shipmode,count(*) from tst.lineitem group by l_shipmode
  --
  --
 drop table tst.orders 
@@ -42,7 +55,7 @@ O_CLERK varchar(50),
 O_SHIPPRIORITY INT, 
 O_COMMENT varchar(150)) 
 go
-call DL.ConvertToExternal('tst.orders','/ISC/Cloud/ExternalTable/IRIS-ExternalTable/test/orders.json')
+call DL.ConvertToExternal('tst.orders','test/orders.json')
  --
 
 select 
@@ -62,7 +75,7 @@ end
 end
   ) as low_line_count
 from
-  exttst.orders o join exttst.lineitem l 
+  tst.orders o join tst.lineitem l 
   on 
     o.o_orderkey = l.l_orderkey 
 where 
@@ -78,12 +91,4 @@ int1 INT,
 float1 DOUBLE, 
 field2 varchar(50))
 go 
- -- convert table to file-based external Google Cloud
-call DL.ConvertToExternal('tst.multifile','test/multifile-gs.json')
-select * from exttst.multifile 
- -- convert table to file-based external AWS S3
-call DL.ConvertToExternal('tst.multifile','test/multifile-s3.json')
-select * from exttst.multifile
- -- convert table to file-based external Azure Storage Bucket
-call DL.ConvertToExternal('tst.multifile','test/multifile-azure.json')
-select * from exttst.multifile
+```

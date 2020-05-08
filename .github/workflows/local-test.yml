@@ -100,7 +100,6 @@ jobs:
         timeout-minutes: 2
         run: |
             CONTAINER=`docker ps -lq`
-            #apk add curl
             /bin/echo -e '' \
               'ZN "USER"\n' \
               'set args=3\n' \
