@@ -81,7 +81,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
 
 
  set storageProperties=storageProperties_"<Data name=""%PATH"">"_LNBR
- set storageProperties=storageProperties_"<RetrievalCode>s {*}=%etFileList(%etFileNumber)</RetrievalCode>"_LNBR
+ set storageProperties=storageProperties_"<RetrievalCode>s {*}=%extFileList(%extFileNumber)</RetrievalCode>"_LNBR
  set storageProperties=storageProperties_"</Data>"_LNBR
 
    if config.type="jsonlines" {

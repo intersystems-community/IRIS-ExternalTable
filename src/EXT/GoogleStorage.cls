@@ -3,7 +3,7 @@ Class EXT.GoogleStorage Extends EXT.LocalFile
 
 ClassMethod GetFileList(location) As %Status
 {
-    kill %etFileList
+    kill %extFileList
     //curl -H "Authorization: Bearer $TOKEN" "https://storage.googleapis.com/storage/v1/b/iris-external-table/o?prefix="
     set tmpfilename="gsutil_ls.txt" //##class(%File).TempFilename()
     set args=2
@@ -14,7 +14,7 @@ ClassMethod GetFileList(location) As %Status
     set sc=file.LinkToFile(tmpfilename)
     while 'file.AtEnd {
         //write !, file.ReadLine()
-        set %etFileList($I(%etFileList))=file.ReadLine()
+        set %extFileList($I(%extFileList))=file.ReadLine()
     } 
     quit $$$OK
 }
@@ -22,7 +22,7 @@ ClassMethod GetFileList(location) As %Status
 ClassMethod GetAccessToken() As %String
 {
     //$ gcloud auth print-access-token
-    if '$data(%etGoogleAuthToken) {
+    if '$data(%extGoogleAuthToken) {
         set tmpfilename="gc_token.txt" //##class(%File).TempFilename()
         set args=2
         set args(1)="auth"
@@ -30,12 +30,12 @@ ClassMethod GetAccessToken() As %String
         set sc = $ZF(-100,"/STDOUT="_tmpfilename, "gcloud", .args)
         set file=##class(%Stream.FileCharacter).%New()
         set sc=file.LinkToFile(tmpfilename)
-        set %etGoogleAuthToken=file.Read(1000)
+        set %extGoogleAuthToken=file.Read(1000)
         set file=""
         set sc=##class(%File).Delete(tmpfilename)
     }
     //curl -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
-    quit " Bearer "_%etGoogleAuthToken
+    quit " Bearer "_%extGoogleAuthToken
 }
 
 ClassMethod GetFileHeader(filename, classname = "") As %Status

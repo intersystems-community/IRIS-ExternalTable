@@ -25,21 +25,21 @@ ClassMethod SkipHeaders(classname)
 ClassMethod ReadNextLine(location, classname = "") As %String
 {
   	if '$IsObject($g(%extstream)) {
-		if '$data(%etFileList) {
+		if '$data(%extFileList) {
 			do ..GetFileList(location)
 		}
-		set %etFileNumber=1
-		do ..GetFileHeader(%etFileList(%etFileNumber),classname)
+		set %extFileNumber=1
+		do ..GetFileHeader(%extFileList(%extFileNumber),classname)
 		do ..SkipHeaders(classname)
 	}
 	if %extstream.AtEnd {
-		set %etFileNumber=%etFileNumber+1
-		if %etFileNumber>%etFileList {
+		set %extFileNumber=%extFileNumber+1
+		if %extFileNumber>%extFileList {
 			kill %extstream
-			kill %etFileList
+			kill %extFileList
 			quit ""
 		}
-		do ..GetFileHeader(%etFileList(%etFileNumber),classname)
+		do ..GetFileHeader(%extFileList(%extFileNumber),classname)
 		do ..SkipHeaders(classname)
 	}
 	if '%extstream.AtEnd {
@@ -49,10 +49,10 @@ ClassMethod ReadNextLine(location, classname = "") As %String
 	}
 }
 
-/// method would initialize list of files in %etFileList array
+/// method would initialize list of files in %extFileList array
 ClassMethod GetFileList(location, classname = "") As %Status
 {
-   kill %etFileList
+   kill %extFileList
    
    set resultSet = ##class(%ResultSet).%New()
    set resultSet.ClassName = "%Library.File"
@@ -60,12 +60,12 @@ ClassMethod GetFileList(location, classname = "") As %Status
    set status = resultSet.%Execute($get(^EXT.Config("LocalDir"),"")_location)
    if $$$ISERR(status) {
 	  //if resultset returns nothing - assume that filename was passed
-	  set %etFileList($I(%etFileList))=$get(^EXT.Config("LocalDir"),"")_location
+	  set %extFileList($I(%extFileList))=$get(^EXT.Config("LocalDir"),"")_location
    }
    else {
 		while (resultSet.%Next()) {
 			//write !, resultSet.Name
-			set %etFileList($I(%etFileList))=resultSet.Name
+			set %extFileList($I(%extFileList))=resultSet.Name
 		}
 
    }

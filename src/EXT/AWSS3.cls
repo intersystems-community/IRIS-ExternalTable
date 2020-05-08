@@ -25,10 +25,10 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
         set sc = request.Get("/latest/meta-data/iam/security-credentials/"_role)
         set json=request.HttpResponse.Data.Read(32000)
         set jsonobject={}.%FromJSON(json)
-        set %etAWS("AccessKeyId")=jsonobject.AccessKeyId
-        set %etAWS("SecretAccessKey")=jsonobject.SecretAccessKey
+        set %extAWS("AccessKeyId")=jsonobject.AccessKeyId
+        set %extAWS("SecretAccessKey")=jsonobject.SecretAccessKey
         if jsonobject.Token'="" {
-            set %etAWS("Token")=jsonobject.Token
+            set %extAWS("Token")=jsonobject.Token
         }
         //TODO: deal with credentials expiration
         //"Expiration" : "2020-05-06T02:35:43Z"
@@ -52,19 +52,19 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
         set line=file.ReadLine()
         set token=$p(line," = ",2)
 
-        set %etAWS("AccessKeyId")=keyId
-        set %etAWS("SecretAccessKey")=keySecret
+        set %extAWS("AccessKeyId")=keyId
+        set %extAWS("SecretAccessKey")=keySecret
         if token'="" { //set token variable only if token present
-           set %etAWS("Token")=token
+           set %extAWS("Token")=token
         }
     }
     if (useEnvVar) {
         //https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
-        set %etAWS("AccessKeyId")=$system.Util.GetEnviron("AWS_ACCESS_KEY_ID")
-        set %etAWS("SecretAccessKey")=$system.Util.GetEnviron("AWS_SECRET_ACCESS_KEY")
+        set %extAWS("AccessKeyId")=$system.Util.GetEnviron("AWS_ACCESS_KEY_ID")
+        set %extAWS("SecretAccessKey")=$system.Util.GetEnviron("AWS_SECRET_ACCESS_KEY")
         set token=$system.Util.GetEnviron("AWS_SESSION_TOKEN")
         if token'="" { //set token variable only if token present
-            set %etAWS("Token")=token
+            set %extAWS("Token")=token
         }
     }
    quit $$$OK
@@ -72,11 +72,11 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
 
 ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
 {
-    if '$data(%etAWS) {
+    if '$data(%extAWS) {
 	    set sc=..GetAWSCredentials()
 	}
-    set tAccessKeyId =%etAWS("AccessKeyId")
-    set tSecretAccessKey = %etAWS("SecretAccessKey")
+    set tAccessKeyId =%extAWS("AccessKeyId")
+    set tSecretAccessKey = %extAWS("SecretAccessKey")
     set tDateH = $ZTS
     set tWeekDay = $P($ZDT(tDateH,11)," ",1)
     set tDate = tWeekDay_", "_$ZDT(tDateH,2,1)_" GMT"
@@ -85,8 +85,8 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     set tContentMD5 = ""
     set tContentType = ""
     set tToken=""
-    if $d(%etAWS("Token")) {
-        set tToken="x-amz-security-token:"_%etAWS("Token")_$c(10)
+    if $d(%extAWS("Token")) {
+        set tToken="x-amz-security-token:"_%extAWS("Token")_$c(10)
     }
     //set tStringToSign = "GET"_$C(10)_tContentMD5_$C(10)_tContentType_$C(10)_tDate_$C(10)_"/"_bucket_"/"_key
     set tStringToSign = $p(requeststring," ",1)_$C(10)_tContentMD5_$C(10)_tContentType_$C(10)_tDate_$C(10)_tToken_$p(requeststring," ",2)
@@ -101,8 +101,8 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     set tAuthorization = "AWS "_tAccessKeyId_":"_tSignatureBase64
     //w !,"Authorization: "_tAuthorization
     set request.Authorization=tAuthorization
-    if $d(%etAWS("Token")) {
-        do request.SetHeader("X-Amz-Security-Token",%etAWS("Token"))
+    if $d(%extAWS("Token")) {
+        do request.SetHeader("X-Amz-Security-Token",%extAWS("Token"))
     }
     quit $$$OK
 }
@@ -135,12 +135,12 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
 
 ClassMethod GetFileList(location) As %Status
 {
-    kill %etFileList
+    kill %extFileList
     //s3://iris-external-table/
     if $Extract(location,$Length(location))'="/" {
         //if location does not end with '/' consider it the single file
-        set %etFileList=1
-        set %etFileList(1)=location
+        set %extFileList=1
+        set %extFileList(1)=location
         quit $$$OK
     }
     set bucket = $p(location,"/",3) 
@@ -167,7 +167,7 @@ ClassMethod GetFileList(location) As %Status
     for i=1:1:numkeys-1 {
         set file=$p($p(data,"<Key>",i+1),"</Key>")
         //write !,key
-        set %etFileList($I(%etFileList))=location_file
+        set %extFileList($I(%extFileList))=location_file
     }
     quit $$$OK
 }
