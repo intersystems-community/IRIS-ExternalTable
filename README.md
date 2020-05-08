@@ -15,6 +15,17 @@ CREATE TABLE test.table1
 ```
 Than convert it to "External" table
 ```sql
+call DL.ConvertToExternal(
+    'test.table1',
+    '{ 
+        "adapter":"DL.GoogleStorage",
+        "location":"gs://iris-external-table/",
+        "delimiter": ","
+    }' 
+)
+```
+Or using table configuration file
+```sql
 CALL DL.ConvertToExternal('test.table1','<path-to>/multifile-gs.json')
 ```
 Where `multifile-gs.json` is:
@@ -25,6 +36,7 @@ Where `multifile-gs.json` is:
     "delimiter": ","
 }
 ```
+
 `location` can point to individual file or directory with multiple files.
 
 Supported adapters:

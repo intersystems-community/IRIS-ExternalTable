@@ -3,13 +3,20 @@ Class DL.ExternalStorage [ Abstract ]
 
 ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = ConvertToExternal, SqlProc ]
 {
- //parameters - json document
- set file=##class(%Stream.FileCharacter).%New()
- Set sc=file.LinkToFile($get(^ET.Config("LocalDir"),"")_parameters)
- set config={}.%FromJSON(file.Read(32000))
+ if $e(parameters)="{" {
+    //parameters - json string
+    set config={}.%FromJSON(parameters)
+ } 
+ else {
+   //parameters - json file
+   set file=##class(%Stream.FileCharacter).%New()
+   Set sc=file.LinkToFile($get(^ET.Config("LocalDir"),"")_parameters)
+   set config={}.%FromJSON(file.Read(32000))
+ }
+ set configTxt=config.%ToJSON()
+ set configTxt=$replace(configTxt,"""","'")
  
  set LNBR=$c(10)
-
  s classname=tablename //add proper tablename detection
  s tempsourcefile="tempsrc.cls"
  s temptargetfile="temptgt.cls"
@@ -47,7 +54,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  set classHead=""_
  "Class {{CLASSNAME}} Extends (%Persistent, DL.ExternalStorage) [ SqlRowIdPrivate, DdlAllowed, StorageStrategy = ETStorage ]"_LNBR_
   "{"_LNBR_
-  "Parameter ExternalTableParameters = """_parameters_""";"_LNBR_
+  "Parameter ExternalTableParameters = """_configTxt_""";"_LNBR_
   "Parameter ExternalTableLocation = """_config.location_""";"_LNBR_
   ""_LNBR_
   //"Parameter FileName = ""{{LOCATION}}"";"_LNBR_
