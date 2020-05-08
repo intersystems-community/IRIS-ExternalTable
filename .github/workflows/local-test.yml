@@ -37,7 +37,7 @@ jobs:
             while [ "`docker container inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do echo Waiting container; sleep 1; done
             /bin/echo -e '' \
               'ZN "USER"\n' \
-              'set ^ET.Config("LocalDir")="/home/irisowner/git/"' \
+              'set ^EXT.Config("LocalDir")="/home/irisowner/git/"' \
               'write $zv\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS

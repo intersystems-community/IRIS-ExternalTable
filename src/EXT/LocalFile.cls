@@ -57,10 +57,10 @@ ClassMethod GetFileList(location, classname = "") As %Status
    set resultSet = ##class(%ResultSet).%New()
    set resultSet.ClassName = "%Library.File"
    set resultSet.QueryName = "FileSet"
-   set status = resultSet.%Execute($get(^ET.Config("LocalDir"),"")_location)
+   set status = resultSet.%Execute($get(^EXT.Config("LocalDir"),"")_location)
    if $$$ISERR(status) {
 	  //if resultset returns nothing - assume that filename was passed
-	  set %etFileList($I(%etFileList))=$get(^ET.Config("LocalDir"),"")_location
+	  set %etFileList($I(%etFileList))=$get(^EXT.Config("LocalDir"),"")_location
    }
    else {
 		while (resultSet.%Next()) {

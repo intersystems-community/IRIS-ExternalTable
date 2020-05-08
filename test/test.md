@@ -15,7 +15,7 @@ USER>s sc= ##class(Test.SQLRunner).RunSQLFile("test/sql/localfiles.sql")
 ## SQL Shell
 
 ```sql
-set ^ET.Config("LocalDir")="/Users/anton/IRIS-ExternalTable/"
+set ^EXT.Config("LocalDir")="/Users/anton/IRIS-ExternalTable/"
 do $system.SQL.Shell()
 drop table tst.lineitem
 

@@ -41,9 +41,9 @@ ClassMethod GetAccessToken() As %String
     if '$data(%etAzureAuthToken) {
         
         set server="login.microsoftonline.com" 
-        set clientId=$get(^ET.Config("azure-client-id"),"")
-        set clientSecret=$get(^ET.Config("azure-client-secret"),"")
-        set tenantId=$get(^ET.Config("azure-tenant-id"),"")
+        set clientId=$get(^EXT.Config("azure-client-id"),"")
+        set clientSecret=$get(^EXT.Config("azure-client-secret"),"")
+        set tenantId=$get(^EXT.Config("azure-tenant-id"),"")
 
         set request = ##class(%Net.HttpRequest).%New()                         
         set request.Server = server

@@ -188,7 +188,7 @@ gcloud auth activate-service-account --key-file=my-service-account-key.json
 
 Work in progress... Check back for updates.
 
-Authentication is based on Azure AD. The following parameters need to be set: `azure-client-id`, `azure-client-secret`, `azure-tenant-id`. (See EXT.Azure for details. Subject to change!!!) Currently using `^ET.Config(parameter-name)` global.
+Authentication is based on Azure AD. The following parameters need to be set: `azure-client-id`, `azure-client-secret`, `azure-tenant-id`. (See EXT.Azure for details. Subject to change!!!) Currently using `^EXT.Config(parameter-name)` global.
 
 You can use the following commands to gather this information:
 ```bash
@@ -198,11 +198,11 @@ az ad sp create-for-rbac --sdk-auth
 
 ## Configuration
 
-^ET.Config("LocalDir") global can be used to set common path part for table configuration files and EXT.LocalFile based locations.
+^EXT.Config("LocalDir") global can be used to set common path part for table configuration files and EXT.LocalFile based locations.
 
 For instance, if the full path to your table config is `/home/irisowner/config/mytable.json` and data is located in `/home/irisowner/data/mydata.csv`, then setting:
 ```
-set ^ET.Config("LocalDir")="/home/irisowner/" 
+set ^EXT.Config("LocalDir")="/home/irisowner/" 
 ```
 would allow you to refer to them as: 
 ```

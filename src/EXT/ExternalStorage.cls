@@ -10,7 +10,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  else {
    //parameters - json file
    set file=##class(%Stream.FileCharacter).%New()
-   Set sc=file.LinkToFile($get(^ET.Config("LocalDir"),"")_parameters)
+   Set sc=file.LinkToFile($get(^EXT.Config("LocalDir"),"")_parameters)
    set config={}.%FromJSON(file.Read(32000))
  }
  set configTxt=config.%ToJSON()
