@@ -44,7 +44,7 @@ ClassMethod ReadNextLine(location, classname = "") As %String
 	}
 	if '%extstream.AtEnd {
 		set line=%extstream.ReadLine()
-		s ^||ETRow=line
+		s ^||EXTRow=line
 		quit $$$OK
 	}
 }
@@ -76,7 +76,7 @@ ClassMethod GenerateReadNextLine(config, classname = "") As %String
 {
    if config.type="jsonlines" {
 	   set code="    set res = ##class("_$classname()_").ReadNextLine("""_config.location_""","""_classname_""")"_$c(10)_
-				"    set %jsonline={}.%FromJSON(^||ETRow)"_$c(10)_
+				"    set %jsonline={}.%FromJSON(^||EXTRow)"_$c(10)_
 				"    quit res"
    } else { 
 	   //default to CSV 
@@ -99,7 +99,7 @@ ClassMethod GenerateRetrievalCode(config, propertyName, sqlFieldName, sqlColumnN
 		quit "s {*}=%jsonline."""_sqlFieldName_""""
    }
    } else {
-	quit "s {*}=$p(^||ETRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")"
+	quit "s {*}=$p(^||EXTRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")"
    }
 }
 

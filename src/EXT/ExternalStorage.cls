@@ -45,7 +45,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
 		 </Data>
 		   */
 	 	 set storageProperties=storageProperties_"<Data name="""_sqlFieldName_""">"_LNBR
-	 	 //set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||ETRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
+	 	 //set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||EXTRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
 	 	 set storageProperties=storageProperties_"<RetrievalCode>"_$ClassMethod(config.adapter, "GenerateRetrievalCode", config, propertyName,sqlFieldName,sqlColumnNumber)_"</RetrievalCode>"_LNBR
 	 	 set storageProperties=storageProperties_"</Data>"_LNBR
 	 }
@@ -86,7 +86,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
 
    if config.type="jsonlines" {
       set storageProperties=storageProperties_"<Data name=""%DOCUMENT"">"_LNBR
-      set storageProperties=storageProperties_"<RetrievalCode>s {*}=^||ETRow</RetrievalCode>"_LNBR
+      set storageProperties=storageProperties_"<RetrievalCode>s {*}=^||EXTRow</RetrievalCode>"_LNBR
       set storageProperties=storageProperties_"</Data>"_LNBR
    }
 
@@ -96,7 +96,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  "<SQLMap name=""Map1"">"_LNBR
  
  set storageTail=
-  "<Global>^||ETRow</Global>"_LNBR_
+  "<Global>^||EXTRow</Global>"_LNBR_
   "<Subscript name=""1"">"_LNBR_
   "<Expression>{RowID}</Expression>"_LNBR_
   "<NextCode>s status=##class({{CLASSNAME}}).ReadNextLine({L1})"_LNBR_

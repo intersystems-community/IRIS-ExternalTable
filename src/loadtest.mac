@@ -7,10 +7,10 @@ loadtest(classname)
 	do $classmethod(classname,"ReadNextLine",1)
 	write "Time to first line: ",$zh-ts,!
 	set counter=1
-	set totalRead=$l(^||ETRow)
+	set totalRead=$l(^||EXTRow)
 	while $classmethod(classname,"ReadNextLine",1) {
 		set counter=counter+1
-		set line=^||ETRow
+		set line=^||EXTRow
 		set totalRead=totalRead+$l(line)
 	}
 	write "Time to last line: ",$zh-ts,!
