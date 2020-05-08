@@ -37,7 +37,7 @@ jobs:
             while [ "`docker container inspect -f {{.State.Health.Status}} $CONTAINER`" != "healthy" ]; do echo Waiting container; sleep 1; done
             /bin/echo -e '' \
               'ZN "USER"\n' \
-              'set ^ET.Config("LocalDir")="/home/irisowner/git/"' \
+              'set ^EXT.Config("LocalDir")="/home/irisowner/git/"' \
               'write $zv\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS
@@ -109,12 +109,12 @@ jobs:
               'set sc=$zf(-100,"","wget",.args)\n' \
               'set sc = $system.OBJ.Load("zpm.xml","c")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
-              'set sc = $system.OBJ.DeletePackage("DL")\n' \
+              'set sc = $system.OBJ.DeletePackage("EXT")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'zpm\n' \
               'load /home/irisowner/git\n' \
               'quit\n' \
-              'set sc = $system.OBJ.CompilePackage("DL")\n' \
+              'set sc = $system.OBJ.CompilePackage("EXT")\n' \
               'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     

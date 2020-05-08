@@ -1,5 +1,5 @@
 {
-    "adapter":"DL.Azure",
+    "adapter":"EXT.Azure",
     "location":"https://webtestanton.blob.core.windows.net/chromecast/",
     "delimiter": ","
 }

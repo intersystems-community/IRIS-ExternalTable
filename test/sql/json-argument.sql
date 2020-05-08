@@ -5,11 +5,11 @@ create table person.firstname (
     personid int
 )
  -- convert table to external storage using json string as a parameter
- -- call DL.ConvertToExternal('person.firstname','{ "adapter":"DL.LocalFile", "location":"test/sql/firstname.csv", "delimiter": "," }')
-call DL.ConvertToExternal(
+ -- call EXT.ConvertToExternal('person.firstname','{ "adapter":"EXT.LocalFile", "location":"test/sql/firstname.csv", "delimiter": "," }')
+call EXT.ConvertToExternal(
     'person.firstname',
     '{ 
-        "adapter":"DL.LocalFile", 
+        "adapter":"EXT.LocalFile", 
         "location":"test/sql/firstname.csv", 
         "delimiter": ",", 
         "skipHeaders": 1

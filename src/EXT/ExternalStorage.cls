@@ -1,4 +1,4 @@
-Class DL.ExternalStorage [ Abstract ]
+Class EXT.ExternalStorage [ Abstract ]
 {
 
 ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = ConvertToExternal, SqlProc ]
@@ -10,7 +10,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  else {
    //parameters - json file
    set file=##class(%Stream.FileCharacter).%New()
-   Set sc=file.LinkToFile($get(^ET.Config("LocalDir"),"")_parameters)
+   Set sc=file.LinkToFile($get(^EXT.Config("LocalDir"),"")_parameters)
    set config={}.%FromJSON(file.Read(32000))
  }
  set configTxt=config.%ToJSON()
@@ -45,14 +45,14 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
 		 </Data>
 		   */
 	 	 set storageProperties=storageProperties_"<Data name="""_sqlFieldName_""">"_LNBR
-	 	 //set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||ETRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
+	 	 //set storageProperties=storageProperties_"<RetrievalCode>s {*}=$p(^||EXTRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")</RetrievalCode>"_LNBR
 	 	 set storageProperties=storageProperties_"<RetrievalCode>"_$ClassMethod(config.adapter, "GenerateRetrievalCode", config, propertyName,sqlFieldName,sqlColumnNumber)_"</RetrievalCode>"_LNBR
 	 	 set storageProperties=storageProperties_"</Data>"_LNBR
 	 }
  }
  // SqlTableName = ""{{TABLENAME}}"",
  set classHead=""_
- "Class {{CLASSNAME}} Extends (%Persistent, DL.ExternalStorage) [ SqlRowIdPrivate, DdlAllowed, StorageStrategy = ETStorage ]"_LNBR_
+ "Class {{CLASSNAME}} Extends (%Persistent, EXT.ExternalStorage) [ SqlRowIdPrivate, DdlAllowed, StorageStrategy = ETStorage ]"_LNBR_
   "{"_LNBR_
   "Parameter ExternalTableParameters = """_configTxt_""";"_LNBR_
   "Parameter ExternalTableLocation = """_config.location_""";"_LNBR_
@@ -81,12 +81,12 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
 
 
  set storageProperties=storageProperties_"<Data name=""%PATH"">"_LNBR
- set storageProperties=storageProperties_"<RetrievalCode>s {*}=%etFileList(%etFileNumber)</RetrievalCode>"_LNBR
+ set storageProperties=storageProperties_"<RetrievalCode>s {*}=%extFileList(%extFileNumber)</RetrievalCode>"_LNBR
  set storageProperties=storageProperties_"</Data>"_LNBR
 
    if config.type="jsonlines" {
       set storageProperties=storageProperties_"<Data name=""%DOCUMENT"">"_LNBR
-      set storageProperties=storageProperties_"<RetrievalCode>s {*}=^||ETRow</RetrievalCode>"_LNBR
+      set storageProperties=storageProperties_"<RetrievalCode>s {*}=^||EXTRow</RetrievalCode>"_LNBR
       set storageProperties=storageProperties_"</Data>"_LNBR
    }
 
@@ -96,7 +96,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  "<SQLMap name=""Map1"">"_LNBR
  
  set storageTail=
-  "<Global>^||ETRow</Global>"_LNBR_
+  "<Global>^||EXTRow</Global>"_LNBR_
   "<Subscript name=""1"">"_LNBR_
   "<Expression>{RowID}</Expression>"_LNBR_
   "<NextCode>s status=##class({{CLASSNAME}}).ReadNextLine({L1})"_LNBR_

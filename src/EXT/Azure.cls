@@ -1,10 +1,10 @@
-Class DL.Azure Extends DL.LocalFile
+Class EXT.Azure Extends EXT.LocalFile
 {
 
 ClassMethod GetFileList(location) As %Status
 {
     //  https://mystorageaccount.blob.core.windows.net/container/
-    kill %etFileList
+    kill %extFileList
     set server=$p(location,"/",3)
     set key=$p(location,"/",4,*)
     set request = ##class(%Net.HttpRequest).%New()                         
@@ -25,7 +25,7 @@ ClassMethod GetFileList(location) As %Status
     for i=1:1:numkeys-1 {
         set file=$p($p(data,"<Name>",i+1),"</Name>")
         //write !,key
-        set %etFileList($I(%etFileList))=location_file
+        set %extFileList($I(%extFileList))=location_file
     }    quit $$$OK
 }
 
@@ -38,12 +38,12 @@ ClassMethod GetAccessToken() As %String
     //curl -H Metadata:true 'http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=https://storage.azure.com/'
 
 
-    if '$data(%etAzureAuthToken) {
+    if '$data(%extAzureAuthToken) {
         
         set server="login.microsoftonline.com" 
-        set clientId=$get(^ET.Config("azure-client-id"),"")
-        set clientSecret=$get(^ET.Config("azure-client-secret"),"")
-        set tenantId=$get(^ET.Config("azure-tenant-id"),"")
+        set clientId=$get(^EXT.Config("azure-client-id"),"")
+        set clientSecret=$get(^EXT.Config("azure-client-secret"),"")
+        set tenantId=$get(^EXT.Config("azure-tenant-id"),"")
 
         set request = ##class(%Net.HttpRequest).%New()                         
         set request.Server = server
@@ -59,9 +59,9 @@ ClassMethod GetAccessToken() As %String
         //do request.HttpResponse.OutputHeaders()
         //do request.HttpResponse.OutputToDevice
         set json=request.HttpResponse.Data.Read(32000)
-        set %etAzureAuthToken={}.%FromJSON(json)."access_token"
+        set %extAzureAuthToken={}.%FromJSON(json)."access_token"
     }
-    quit " Bearer "_%etAzureAuthToken
+    quit " Bearer "_%extAzureAuthToken
 }
 
 ClassMethod GetFileHeader(filename, classname = "") As %Status
@@ -81,8 +81,8 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
     set sc = request.Get(url)
     //do request.HttpResponse.OutputHeaders()
     //do request.HttpResponse.OutputToDevice
-    set %dlstream=request.HttpResponse.Data
-    Set %dlstream.LineTerminator=$char(10)
+    set %extstream=request.HttpResponse.Data
+    Set %extstream.LineTerminator=$char(10)
 	quit $$$OK
 }
 

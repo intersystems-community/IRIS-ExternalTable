@@ -1,11 +1,11 @@
-Class DL.LocalFile [ Abstract ]
+Class EXT.LocalFile [ Abstract ]
 {
 
 ClassMethod GetFileHeader(filename, classname = "") As %Status
 {
-	Set %dlstream=##class(%Stream.FileCharacter).%New()
-	Set sc=%dlstream.LinkToFile(filename)
-	Set %dlstream.LineTerminator=$char(10)
+	Set %extstream=##class(%Stream.FileCharacter).%New()
+	Set sc=%extstream.LinkToFile(filename)
+	Set %extstream.LineTerminator=$char(10)
 	quit $$$OK
 }
 
@@ -15,7 +15,7 @@ ClassMethod SkipHeaders(classname)
 		set config={}.%FromJSON($replace($Parameter(classname,"ExternalTableParameters"),"'",""""))
 		if config.skipHeaders'="" {
 			for i=1:1:config.skipHeaders { 
-				set line=%dlstream.ReadLine() 
+				set line=%extstream.ReadLine() 
 			}
 		}
 	}
@@ -24,48 +24,48 @@ ClassMethod SkipHeaders(classname)
 
 ClassMethod ReadNextLine(location, classname = "") As %String
 {
-  	if '$IsObject($g(%dlstream)) {
-		if '$data(%etFileList) {
+  	if '$IsObject($g(%extstream)) {
+		if '$data(%extFileList) {
 			do ..GetFileList(location)
 		}
-		set %etFileNumber=1
-		do ..GetFileHeader(%etFileList(%etFileNumber),classname)
+		set %extFileNumber=1
+		do ..GetFileHeader(%extFileList(%extFileNumber),classname)
 		do ..SkipHeaders(classname)
 	}
-	if %dlstream.AtEnd {
-		set %etFileNumber=%etFileNumber+1
-		if %etFileNumber>%etFileList {
-			kill %dlstream
-			kill %etFileList
+	if %extstream.AtEnd {
+		set %extFileNumber=%extFileNumber+1
+		if %extFileNumber>%extFileList {
+			kill %extstream
+			kill %extFileList
 			quit ""
 		}
-		do ..GetFileHeader(%etFileList(%etFileNumber),classname)
+		do ..GetFileHeader(%extFileList(%extFileNumber),classname)
 		do ..SkipHeaders(classname)
 	}
-	if '%dlstream.AtEnd {
-		set line=%dlstream.ReadLine()
-		s ^||ETRow=line
+	if '%extstream.AtEnd {
+		set line=%extstream.ReadLine()
+		s ^||EXTRow=line
 		quit $$$OK
 	}
 }
 
-/// method would initialize list of files in %etFileList array
+/// method would initialize list of files in %extFileList array
 ClassMethod GetFileList(location, classname = "") As %Status
 {
-   kill %etFileList
+   kill %extFileList
    
    set resultSet = ##class(%ResultSet).%New()
    set resultSet.ClassName = "%Library.File"
    set resultSet.QueryName = "FileSet"
-   set status = resultSet.%Execute($get(^ET.Config("LocalDir"),"")_location)
+   set status = resultSet.%Execute($get(^EXT.Config("LocalDir"),"")_location)
    if $$$ISERR(status) {
 	  //if resultset returns nothing - assume that filename was passed
-	  set %etFileList($I(%etFileList))=$get(^ET.Config("LocalDir"),"")_location
+	  set %extFileList($I(%extFileList))=$get(^EXT.Config("LocalDir"),"")_location
    }
    else {
 		while (resultSet.%Next()) {
 			//write !, resultSet.Name
-			set %etFileList($I(%etFileList))=resultSet.Name
+			set %extFileList($I(%extFileList))=resultSet.Name
 		}
 
    }
@@ -76,7 +76,7 @@ ClassMethod GenerateReadNextLine(config, classname = "") As %String
 {
    if config.type="jsonlines" {
 	   set code="    set res = ##class("_$classname()_").ReadNextLine("""_config.location_""","""_classname_""")"_$c(10)_
-				"    set %jsonline={}.%FromJSON(^||ETRow)"_$c(10)_
+				"    set %jsonline={}.%FromJSON(^||EXTRow)"_$c(10)_
 				"    quit res"
    } else { 
 	   //default to CSV 
@@ -99,7 +99,7 @@ ClassMethod GenerateRetrievalCode(config, propertyName, sqlFieldName, sqlColumnN
 		quit "s {*}=%jsonline."""_sqlFieldName_""""
    }
    } else {
-	quit "s {*}=$p(^||ETRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")"
+	quit "s {*}=$p(^||EXTRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")"
    }
 }
 

@@ -4,15 +4,15 @@ Class Test.SQLRunner [ Abstract ]
 ClassMethod RunSQLFile(filename) As %Status
 {
     set teststatus=$$$OK
-    if '##class(%File).Exists($get(^ET.Config("LocalDir"))_filename) {
-        write !,"ERROR: Can not find file:"_ $get(^ET.Config("LocalDir"))_filename
+    if '##class(%File).Exists($get(^EXT.Config("LocalDir"))_filename) {
+        write !,"ERROR: Can not find file:"_ $get(^EXT.Config("LocalDir"))_filename
         write !,"Check SQL test file name and 'LocalDir' configuration"
-        set sc=$$$ERROR($$$GeneralError,"ERROR: Can not find file:"_ $get(^ET.Config("LocalDir"))_filename_" Check  SQL test file name and 'LocalDir' configuration")
+        set sc=$$$ERROR($$$GeneralError,"ERROR: Can not find file:"_ $get(^EXT.Config("LocalDir"))_filename_" Check  SQL test file name and 'LocalDir' configuration")
         set teststatus=$SYSTEM.Status.AppendStatus(teststatus,sc)
     }
-	write !, "RUNNING SQL FILE: "_$get(^ET.Config("LocalDir"))_filename
+	write !, "RUNNING SQL FILE: "_$get(^EXT.Config("LocalDir"))_filename
     Set sqlfile=##class(%Stream.FileCharacter).%New()
-	Set sc=sqlfile.LinkToFile($get(^ET.Config("LocalDir"))_filename)
+	Set sc=sqlfile.LinkToFile($get(^EXT.Config("LocalDir"))_filename)
 	//Set sqlfile.LineTerminator=$char(10)
     set linenum=0
     kill sql

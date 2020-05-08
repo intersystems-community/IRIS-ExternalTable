@@ -1,5 +1,5 @@
 {
-    "adapter":"DL.GoogleStorage",
+    "adapter":"EXT.GoogleStorage",
     "location":"gs://iris-external-table/",
     "delimiter": ","
 }
