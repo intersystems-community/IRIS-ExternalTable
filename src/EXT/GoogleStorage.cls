@@ -1,4 +1,4 @@
-Class DL.GoogleStorage Extends DL.LocalFile
+Class EXT.GoogleStorage Extends EXT.LocalFile
 {
 
 ClassMethod GetFileList(location) As %Status

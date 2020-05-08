@@ -1,4 +1,4 @@
-Class DL.Azure Extends DL.LocalFile
+Class EXT.Azure Extends EXT.LocalFile
 {
 
 ClassMethod GetFileList(location) As %Status

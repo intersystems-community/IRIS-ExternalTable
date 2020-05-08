@@ -18,7 +18,7 @@
     rate_details_periods varchar(150)
 )
  -- convert table to external storage 
-call DL.ConvertToExternal('toronto.greenparking','test/toronto-green-parking.json')
+call EXT.ConvertToExternal('toronto.greenparking','test/toronto-green-parking.json')
  -- select from external table. 
 select * from toronto.greenparking
  -- select %DOCUMENT, containing the entire JSON line from table. 

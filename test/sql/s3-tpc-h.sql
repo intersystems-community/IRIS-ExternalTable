@@ -18,7 +18,7 @@ L_SHIPINSTRUCT varchar(50),
 L_SHIPMODE varchar(50), 
 L_COMMENT varchar(150))
  -- convert LINEITEM to external
-call DL.ConvertToExternal('tst.lineitem','test/lineitem-s3.json')
+call EXT.ConvertToExternal('tst.lineitem','test/lineitem-s3.json')
  -- Count # of rows by shipmode
 select l_shipmode,count(*) from tst.lineitem group by l_shipmode
  -- create ORDERS
@@ -33,7 +33,7 @@ O_CLERK varchar(50),
 O_SHIPPRIORITY INT, 
 O_COMMENT varchar(150)) 
  -- convert ORDERS to external
-call DL.ConvertToExternal('tst.orders','test/orders-s3.json')
+call EXT.ConvertToExternal('tst.orders','test/orders-s3.json')
  -- count # of ORDER records
 select count(*) from tst.orders
  -- TPC-H query # ?

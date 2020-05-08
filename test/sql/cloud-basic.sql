@@ -5,7 +5,7 @@ int1 INT,
 float1 DOUBLE, 
 field2 varchar(50))
  -- convert table to file-based external Google Cloud
-call DL.ConvertToExternal('tst.multifileGS','test/multifile-gs.json')
+call EXT.ConvertToExternal('tst.multifileGS','test/multifile-gs.json')
  --
 select %PATH,* from tst.multifileGS 
  -- create S3 table
@@ -15,7 +15,7 @@ int1 INT,
 float1 DOUBLE, 
 field2 varchar(50))
  -- convert table to file-based external AWS S3
-call DL.ConvertToExternal('tst.multifileS3','test/multifile-s3.json')
+call EXT.ConvertToExternal('tst.multifileS3','test/multifile-s3.json')
  --
 select * from tst.multifileS3
  -- create Azure table
@@ -25,7 +25,7 @@ int1 INT,
 float1 DOUBLE, 
 field2 varchar(50))
  -- convert table to file-based external Azure Storage Bucket
-call DL.ConvertToExternal('tst.multifileAZ','test/multifile-azure.json')
+call EXT.ConvertToExternal('tst.multifileAZ','test/multifile-azure.json')
  --
 select * from tst.multifileAZ
  -- UNION across all three providers

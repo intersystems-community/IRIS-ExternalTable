@@ -9,8 +9,8 @@ create table person.firstname (
     firstname varchar(50), 
     personid int
 )
- -- convert table to external storage (currently we add "ext" prefix to the table name to keep the original for debugging)
-call DL.ConvertToExternal('person.firstname','test/sql/firstname.json')
+ -- convert table to external storage
+call EXT.ConvertToExternal('person.firstname','test/sql/firstname.json')
  -- select from external table. Try to manually change test.csv file and rerun
 select * from person.firstname
  -- lastname is a "regular" global - based table

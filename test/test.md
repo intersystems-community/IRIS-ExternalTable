@@ -38,7 +38,7 @@ L_SHIPMODE varchar(50),
 L_COMMENT varchar(150))
 go
  -- convert table to file-based external
-call DL.ConvertToExternal('tst.lineitem','test/lineitem.json')
+call EXT.ConvertToExternal('tst.lineitem','test/lineitem.json')
 select l_shipmode,count(*) from tst.lineitem group by l_shipmode
  --
  --
@@ -55,7 +55,7 @@ O_CLERK varchar(50),
 O_SHIPPRIORITY INT, 
 O_COMMENT varchar(150)) 
 go
-call DL.ConvertToExternal('tst.orders','test/orders.json')
+call EXT.ConvertToExternal('tst.orders','test/orders.json')
  --
 
 select 

@@ -1,4 +1,4 @@
-Class DL.LocalFile [ Abstract ]
+Class EXT.LocalFile [ Abstract ]
 {
 
 ClassMethod GetFileHeader(filename, classname = "") As %Status

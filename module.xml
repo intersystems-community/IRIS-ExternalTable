@@ -6,7 +6,7 @@
       <Version>0.2.0</Version>
       <Packaging>module</Packaging>
       <SourcesRoot>src</SourcesRoot>
-      <Resource Name="DL.PKG"/>
+      <Resource Name="EXT.PKG"/>
     </Module>
   </Document>
 </Export>

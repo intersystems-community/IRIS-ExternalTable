@@ -1,5 +1,5 @@
 {
-    "adapter":"DL.LocalFile",
+    "adapter":"EXT.LocalFile",
     "location":"test/json/toronto-green-parking.json",
     "type": "jsonlines",
     "jsonParser": {

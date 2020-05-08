@@ -1,4 +1,4 @@
-Class DL.AWSS3 Extends DL.LocalFile
+Class EXT.AWSS3 Extends EXT.LocalFile
 {
 
 ClassMethod GetAWSCredentials(profile = "default") As %Status

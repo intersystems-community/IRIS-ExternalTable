@@ -20,15 +20,15 @@ CREATE TABLE person.firstname (
     personid INT
 )
 
-CALL DL.ConvertToExternal(
+CALL EXT.ConvertToExternal(
     'person.firstname',
     '{
-        "adapter":"DL.AWSS3",
+        "adapter":"EXT.AWSS3",
         "location":"s3:/mybucket/myfile.csv",
         "delimiter": ",",
         "skipHeaders": 1
     }')
--- change "s3:/mybucket/myfile.csv" to "/myfolder/myfile.csv" and "DL.AWSS3" to "DL.LocalFile" to use the local filesystem instead
+-- change "s3:/mybucket/myfile.csv" to "/myfolder/myfile.csv" and "EXT.AWSS3" to "EXT.LocalFile" to use the local filesystem instead
 
 SELECT * FROM person.firstname
 firstname	personid
@@ -57,13 +57,13 @@ CREATE TABLE test.table1
     float1 DOUBLE, 
     field2 VARCHAR(50))
 ```
-Then convert it to "External" table using `DL.ConvertToExternal` stored procedure, specifying existing table name and table configuration in JSON format.
+Then convert it to "External" table using `EXT.ConvertToExternal` stored procedure, specifying existing table name and table configuration in JSON format.
 
 ```sql
-call DL.ConvertToExternal(
+call EXT.ConvertToExternal(
     'test.table1',
     '{ 
-        "adapter":"DL.GoogleStorage",
+        "adapter":"EXT.GoogleStorage",
         "location":"gs://iris-external-table/",
         "delimiter": ","
     }' 
@@ -71,12 +71,12 @@ call DL.ConvertToExternal(
 ```
 Table configuration can also be specified by using reference to the file.
 ```sql
-CALL DL.ConvertToExternal('test.table1','<path-to>/multifile-gs.json')
+CALL EXT.ConvertToExternal('test.table1','<path-to>/multifile-gs.json')
 ```
 Where `multifile-gs.json` is:
 ```json
 {
-    "adapter":"DL.GoogleStorage",
+    "adapter":"EXT.GoogleStorage",
     "location":"gs://iris-external-table/",
     "delimiter": ","
 }
@@ -87,10 +87,10 @@ Where `multifile-gs.json` is:
 `location` can point to a single file or directry/bucket. For directory/bucket, make sure to include tailing slash `"location":"<path-to>/"`
 
 Supported adapters:
-- `DL.LocalFile` - files on the local file system. Location format: `/<path-to>/<filename.csv>`
-- `DL.AWSS3` - AWS S3 Buckets. Location format: `s3://<bucketname>/<filename.csv>`
-- `DL.GoogleStorage` - Google Cloud Storage Buckets. Location format: `gs://<bucketname>/<filename.csv>`
-- `DL.Azure` - Azure BLOB Storage containers. Location format: `https://<bucketname>.blob.core.windows.net/<containername>/<filename.csv>`
+- `EXT.LocalFile` - files on the local file system. Location format: `/<path-to>/<filename.csv>`
+- `EXT.AWSS3` - AWS S3 Buckets. Location format: `s3://<bucketname>/<filename.csv>`
+- `EXT.GoogleStorage` - Google Cloud Storage Buckets. Location format: `gs://<bucketname>/<filename.csv>`
+- `EXT.Azure` - Azure BLOB Storage containers. Location format: `https://<bucketname>.blob.core.windows.net/<containername>/<filename.csv>`
 
 ## %PATH
 
@@ -103,6 +103,8 @@ SELECT %PATH, * FROM myExternalTable
 ## CSV files
 
 You must specify `"delimiter": ","`
+
+`"skipHeaders": 1` is optional and identifies number of lines to skip at the beginning og the file. Default is 0.
 
 ## JSON files
 
@@ -125,10 +127,10 @@ For complex/non-flat JSON structures you can specify optional `"jsonParser"` sec
     rate_details_periods varchar(150)
 )
 
-call DL.ConvertToExternal(
+call EXT.ConvertToExternal(
     'toronto.greenparking',
     '{
-        "adapter":"DL.LocalFile",
+        "adapter":"EXT.LocalFile",
         "location":"<path-to>/toronto-green-parking.json",
         "type": "jsonlines",
         "jsonParser": {
@@ -186,7 +188,7 @@ gcloud auth activate-service-account --key-file=my-service-account-key.json
 
 Work in progress... Check back for updates.
 
-Authentication is based on Azure AD. The following parameters need to be set: `azure-client-id`, `azure-client-secret`, `azure-tenant-id`. (See DL.Azure for details. Subject to change!!!) Currently using `^ET.Config(parameter-name)` global.
+Authentication is based on Azure AD. The following parameters need to be set: `azure-client-id`, `azure-client-secret`, `azure-tenant-id`. (See EXT.Azure for details. Subject to change!!!) Currently using `^ET.Config(parameter-name)` global.
 
 You can use the following commands to gather this information:
 ```bash
@@ -196,7 +198,7 @@ az ad sp create-for-rbac --sdk-auth
 
 ## Configuration
 
-^ET.Config("LocalDir") global can be used to set common path part for table configuration files and DL.LocalFile based locations.
+^ET.Config("LocalDir") global can be used to set common path part for table configuration files and EXT.LocalFile based locations.
 
 For instance, if the full path to your table config is `/home/irisowner/config/mytable.json` and data is located in `/home/irisowner/data/mydata.csv`, then setting:
 ```
@@ -204,11 +206,11 @@ set ^ET.Config("LocalDir")="/home/irisowner/"
 ```
 would allow you to refer to them as: 
 ```
-call DL.ConvertToExternal('person.firstname','config/mytable.json')
+call EXT.ConvertToExternal('person.firstname','config/mytable.json')
 
 /home/irisowner/config/mytable.json
 {
-    "adapter":"DL.LocalFile",
+    "adapter":"EXT.LocalFile",
     "location":"data/mydata.csv",
     "delimiter": ","
 }
