@@ -64,7 +64,7 @@ ClassMethod GetAccessToken() As %String
     quit " Bearer "_%etAzureAuthToken
 }
 
-ClassMethod GetFileHeader(filename) As %Status
+ClassMethod GetFileHeader(filename, classname = "") As %Status
 {
     //  https://mystorageaccount.blob.core.windows.net/container/myfile.txt
     set server=$p(filename,"/",3)

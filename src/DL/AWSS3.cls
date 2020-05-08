@@ -107,7 +107,7 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     quit $$$OK
 }
 
-ClassMethod GetFileHeader(filename) As %Status
+ClassMethod GetFileHeader(filename, classname = "") As %Status
 {
     //s3://iris-external-table/file3.csv
     set bucket = $p(filename,"/",3) //"deepsee-2018"

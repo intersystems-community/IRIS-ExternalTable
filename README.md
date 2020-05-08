@@ -8,6 +8,7 @@ External tables can be based on a single file or directory/bucket. Using tables,
 
 Let's say you have the following text file, located in S3 bucket at `s3:/mybucket/myfile.csv`:
 ```sql
+name,personid
 anton,1
 john,2
 bill,3
@@ -24,7 +25,8 @@ CALL DL.ConvertToExternal(
     '{
         "adapter":"DL.AWSS3",
         "location":"s3:/mybucket/myfile.csv",
-        "delimiter": ","
+        "delimiter": ",",
+        "skipHeaders": 1
     }')
 -- change "s3:/mybucket/myfile.csv" to "/myfolder/myfile.csv" and "DL.AWSS3" to "DL.LocalFile" to use the local filesystem instead
 
@@ -110,7 +112,7 @@ JSON table configuration must specify `"type": "jsonlines"`
 
 Fields in JSON data are matched to the field names in SQL table by default. Names are case sensitive.
 
-For complex/non-flat JSON structures you can specify optional `"jsonParser"` section, where table field name is matched to the ObjectScript code, extracting field data from the `%jsonline` object. Use https://docs.intersystems.com/irislatest/csp/docbook/DocBook.UI.Page.cls?KEY=GJSON_create for the reference. Field names with underscores, dashes etc. must be enclosed in single quotes.
+For complex/non-flat JSON structures you can specify optional `"jsonParser"` section, where table field name is matched to the ObjectScript code, extracting field data from the `%jsonline` object. Use https://docs.intersystems.com/irislatest/csp/docbook/DocBook.UI.Page.cls?KEY=GJSON_create for the reference. Field names with underscores, dashes etc. must be enclosed in quoted double quotes.
 
 ```sql
  create table toronto.greenparking (
@@ -130,8 +132,8 @@ call DL.ConvertToExternal(
         "location":"<path-to>/toronto-green-parking.json",
         "type": "jsonlines",
         "jsonParser": {
-            "payment_options": "%jsonline.'payment_options'.%ToJSON()",
-            "rate_details_periods": "%jsonline.'rate_details'.'periods'.%ToJSON()"
+            "payment_options": "%jsonline.\"payment_options\".%ToJSON()",
+            "rate_details_periods": "%jsonline.\"rate_details\".periods.%ToJSON()"
         }
     }')
 ```

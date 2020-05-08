@@ -11,7 +11,8 @@ call DL.ConvertToExternal(
     '{ 
         "adapter":"DL.LocalFile", 
         "location":"test/sql/firstname.csv", 
-        "delimiter": "," 
+        "delimiter": ",", 
+        "skipHeaders": 1
     }' 
 )
  -- select from external table. Try to manually change test.csv file and rerun

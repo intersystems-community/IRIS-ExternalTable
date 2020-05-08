@@ -1,5 +1,6 @@
 {
     "adapter":"DL.LocalFile",
     "location":"test/sql/firstname.csv",
-    "delimiter": ","
+    "delimiter": ",",
+    "skipHeaders": 1
 }
