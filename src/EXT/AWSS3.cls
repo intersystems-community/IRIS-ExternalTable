@@ -128,8 +128,8 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
     set sc = request.Get(url)
     //do request.HttpResponse.OutputHeaders()
     //do request.HttpResponse.OutputToDevice()
-    set %dlstream=request.HttpResponse.Data
-    Set %dlstream.LineTerminator=$char(10)
+    set %extstream=request.HttpResponse.Data
+    Set %extstream.LineTerminator=$char(10)
 	quit $$$OK
 }
 

@@ -3,9 +3,9 @@ Class EXT.LocalFile [ Abstract ]
 
 ClassMethod GetFileHeader(filename, classname = "") As %Status
 {
-	Set %dlstream=##class(%Stream.FileCharacter).%New()
-	Set sc=%dlstream.LinkToFile(filename)
-	Set %dlstream.LineTerminator=$char(10)
+	Set %extstream=##class(%Stream.FileCharacter).%New()
+	Set sc=%extstream.LinkToFile(filename)
+	Set %extstream.LineTerminator=$char(10)
 	quit $$$OK
 }
 
@@ -15,7 +15,7 @@ ClassMethod SkipHeaders(classname)
 		set config={}.%FromJSON($replace($Parameter(classname,"ExternalTableParameters"),"'",""""))
 		if config.skipHeaders'="" {
 			for i=1:1:config.skipHeaders { 
-				set line=%dlstream.ReadLine() 
+				set line=%extstream.ReadLine() 
 			}
 		}
 	}
@@ -24,7 +24,7 @@ ClassMethod SkipHeaders(classname)
 
 ClassMethod ReadNextLine(location, classname = "") As %String
 {
-  	if '$IsObject($g(%dlstream)) {
+  	if '$IsObject($g(%extstream)) {
 		if '$data(%etFileList) {
 			do ..GetFileList(location)
 		}
@@ -32,18 +32,18 @@ ClassMethod ReadNextLine(location, classname = "") As %String
 		do ..GetFileHeader(%etFileList(%etFileNumber),classname)
 		do ..SkipHeaders(classname)
 	}
-	if %dlstream.AtEnd {
+	if %extstream.AtEnd {
 		set %etFileNumber=%etFileNumber+1
 		if %etFileNumber>%etFileList {
-			kill %dlstream
+			kill %extstream
 			kill %etFileList
 			quit ""
 		}
 		do ..GetFileHeader(%etFileList(%etFileNumber),classname)
 		do ..SkipHeaders(classname)
 	}
-	if '%dlstream.AtEnd {
-		set line=%dlstream.ReadLine()
+	if '%extstream.AtEnd {
+		set line=%extstream.ReadLine()
 		s ^||ETRow=line
 		quit $$$OK
 	}
