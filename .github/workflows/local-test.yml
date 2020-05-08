@@ -74,7 +74,18 @@ jobs:
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
 
-      - name: Test json-argument.sql
+      - name: Test local-json-lines.sql
+        timeout-minutes: 1
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              'set sc = ##class(Test.SQLRunner).RunSQLFile("test/sql/local-json-lines.sql")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
+
+      - name: Test inline table configuraton
         timeout-minutes: 1
         run: |
             CONTAINER=`docker ps -lq`

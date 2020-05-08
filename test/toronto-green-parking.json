@@ -1,0 +1,9 @@
+{
+    "adapter":"DL.LocalFile",
+    "location":"test/json/toronto-green-parking.json",
+    "type": "jsonlines",
+    "jsonParser": {
+        "payment_options": "%jsonline.'payment_options'.%ToJSON()",
+        "rate_details_periods": "%jsonline.'rate_details'.'periods'.%ToJSON()"
+    }
+}

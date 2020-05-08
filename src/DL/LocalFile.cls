@@ -59,12 +59,33 @@ ClassMethod GetFileList(location) As %Status
 
 ClassMethod GenerateReadNextLine(config) As %String
 {
-   quit "    quit ##class("_$classname()_").ReadNextLine("""_config.location_""")"
+   if config.type="jsonlines" {
+	   set code="    set res = ##class("_$classname()_").ReadNextLine("""_config.location_""")"_$c(10)_
+				"    set %jsonline={}.%FromJSON(^||ETRow)"_$c(10)_
+				"    quit res"
+   } else { 
+	   //default to CSV 
+	   set code="    quit ##class("_$classname()_").ReadNextLine("""_config.location_""")"
+   }
+   quit code
 }
 
 ClassMethod GenerateRetrievalCode(config, propertyName, sqlFieldName, sqlColumnNumber) As %String
 {
+   if config.type="jsonlines" {
+	if config.jsonParser.%Get(sqlFieldName)'="" {
+	 /*   "jsonParser": {
+        "payment_options": "%jsonline.'payment_options'.%ToJSON()",
+        "rate_details_periods": "%jsonline.'rate_details'.periods.%ToJSON()"}
+	*/
+		quit "s {*}="_$replace(config.jsonParser.%Get(sqlFieldName),"'","""")
+
+	} else {
+		quit "s {*}=%jsonline."""_sqlFieldName_""""
+   }
+   } else {
 	quit "s {*}=$p(^||ETRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")"
+   }
 }
 
 }

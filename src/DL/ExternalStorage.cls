@@ -3,7 +3,7 @@ Class DL.ExternalStorage [ Abstract ]
 
 ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = ConvertToExternal, SqlProc ]
 {
- if $e(parameters)="{" {
+ if $e($zstrip(parameters,"<W"))="{" {
     //parameters - json string
     set config={}.%FromJSON(parameters)
  } 
@@ -63,6 +63,12 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
   ""_LNBR_
   "Property RowID As %Integer [ Internal, Private ];"_LNBR_
   "Property %PATH As %String [ Private ];"_LNBR
+
+   if config.type="jsonlines" {
+      //private %DOCUMENT property does contain entire original line
+      set classHead=classHead_"Property %DOCUMENT As %String [ Private ];"_LNBR
+   }
+
   set classHead=$replace(classHead,"{{CLASSNAME}}",newClassNamePrefix_classname)
   set classHead=$replace(classHead,"{{TABLENAME}}",tablename)
   //set classHead=$replace(classHead,"{{LOCATION}}",location)
@@ -77,6 +83,12 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  set storageProperties=storageProperties_"<Data name=""%PATH"">"_LNBR
  set storageProperties=storageProperties_"<RetrievalCode>s {*}=%etFileList(%etFileNumber)</RetrievalCode>"_LNBR
  set storageProperties=storageProperties_"</Data>"_LNBR
+
+   if config.type="jsonlines" {
+      set storageProperties=storageProperties_"<Data name=""%DOCUMENT"">"_LNBR
+      set storageProperties=storageProperties_"<RetrievalCode>s {*}=^||ETRow</RetrievalCode>"_LNBR
+      set storageProperties=storageProperties_"</Data>"_LNBR
+   }
 
  set storageHead=LNBR_
  "Storage ETStorage"_LNBR_
