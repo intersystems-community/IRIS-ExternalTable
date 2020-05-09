@@ -96,6 +96,17 @@ jobs:
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
 
+      - name: Test data import with INSERT INTO SELECT FROM
+        timeout-minutes: 1
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              'set sc = ##class(Test.SQLRunner).RunSQLFile("test/sql/data-import.sql")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
+
       - name: Test Package Manager install
         timeout-minutes: 2
         run: |

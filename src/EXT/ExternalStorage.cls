@@ -17,10 +17,28 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  set configTxt=$replace(configTxt,"""","'")
  
  set LNBR=$c(10)
- s classname=tablename //add proper tablename detection
- s tempsourcefile="tempsrc.cls"
- s temptargetfile="temptgt.cls"
- s newClassNamePrefix=""
+
+ //s classname=tablename //add proper tablename detection
+ if $length(tablename,".")=1 {
+    //no schema defined, use default
+    //TODO: add detection of default schema if different form SQLUser
+    set tablename="SQLUser."_tablename 
+ }
+ set sql="SELECT ID FROM %Dictionary.CompiledClass where SqlQualifiedNameQ='"_tablename_"'"
+ set rs=$system.SQL.Execute(sql)
+ set sc=rs.%Next()
+ if sc'=1 { //table not found
+   //TODO: add proper halt of stored procedure with error report
+   write !,"ERROR: Can not find table: "_tablename
+   //set %sqlcontext.%SQLCODE=9999
+   //set %sqlcontext.%ROWCOUNT=0
+   //set %sqlcontext.%Message="Can not find table: "_tablename
+   //quit 9999
+ }
+ set classname=rs.%Get("ID")
+ set tempsourcefile="tempsrc.cls"
+ set temptargetfile="temptgt.cls"
+ set newClassNamePrefix=""
  Set sc=$system.OBJ.ExportUDL(classname_".cls",tempsourcefile)
  Set file=##class(%Stream.FileCharacter).%New()
  Set sc=file.LinkToFile(tempsourcefile)
@@ -52,7 +70,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  }
  // SqlTableName = ""{{TABLENAME}}"",
  set classHead=""_
- "Class {{CLASSNAME}} Extends (%Persistent, EXT.ExternalStorage) [ SqlRowIdPrivate, DdlAllowed, StorageStrategy = ETStorage ]"_LNBR_
+ "Class {{CLASSNAME}} Extends (%Persistent, EXT.ExternalStorage) [ SqlRowIdPrivate, DdlAllowed, StorageStrategy = EXTStorage,  SqlTableName = "_$p(tablename,".",2)_" ]"_LNBR_
   "{"_LNBR_
   "Parameter ExternalTableParameters = """_configTxt_""";"_LNBR_
   "Parameter ExternalTableLocation = """_config.location_""";"_LNBR_
@@ -91,7 +109,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
    }
 
  set storageHead=LNBR_
- "Storage ETStorage"_LNBR_
+ "Storage EXTStorage"_LNBR_
  "{"_LNBR_
  "<SQLMap name=""Map1"">"_LNBR
  

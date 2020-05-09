@@ -145,6 +145,16 @@ For the tables of `jsonlines` type additional hidden `%DOCUMENT` field is create
 SELECT %DOCUMENT, * FROM myExternalTable
 ```
 
+## Data Migration
+
+External table can be used to migrate data into internal table, using INSER INTO .. SELECT FROM syntax. 
+
+```sql
+INSERT INTO internal_table SELECT * FROM external_table
+
+INSERT INTO internal_table (firstname, personid) SELECT firstname, personid*10 FROM external_table
+```
+
 ## Cloud Support - Authentication
 
 All cloud providers expect you to use authenticated requests to access data. IRIS-ExternalTable supports the following authentication methods for the cloud providers:
