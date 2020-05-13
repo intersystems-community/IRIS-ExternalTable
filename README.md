@@ -106,6 +106,38 @@ You must specify `"delimiter": ","`
 
 `"skipHeaders": 1` is optional and identifies number of lines to skip at the beginning og the file. Default is 0.
 
+## Quoted CSV files
+
+Quoted CSV allows for values to have comma inside the fields, as long as the entire field is enclosed in double quotes. For performance reasons you might prefer to use `"type": "csv"` where possible.
+```
+Year,Make,Model,Description,Price
+1997,Ford,E350,"ac, abs, moon",3000.00
+1999,Chevy,"Venture Extended Edition","",4900.00
+1999,Chevy,"Venture Extended Edition, Very Large",,5000.00
+1996,Jeep,Grand Cherokee,"MUST SELL! air, moon roof, loaded",4799.00
+```
+You must specify `"delimiter": ","` and `"type": "quoted_csv"`. 
+
+`"skipHeaders": 1` is optional and identifies number of lines to skip at the beginning og the file. Default is 0.
+```sql
+ create table cars ( 
+    year INT,
+    make char(10),
+    model varchar(50),
+    description varchar(50),
+    price float
+)
+call EXT.ConvertToExternal(
+    'cars',
+    '{ 
+        "adapter":"EXT.LocalFile", 
+        "location":"test/sql/cars-for-sales.csv",
+        "type": "quoted_csv", 
+        "delimiter": ",", 
+        "skipHeaders": 1
+    }' 
+select * from cars
+```
 ## JSON files
 
 JSON Lines http://jsonlines.org/ format supported. File contains multiple lines, every line is a single JSON document, converted to the row.
