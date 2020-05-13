@@ -6,6 +6,9 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  if $e($zstrip(parameters,"<W"))="{" {
     //parameters - json string
     set config={}.%FromJSON(parameters)
+   //TODO att error trapping for JSON parse errors
+
+
  } 
  else {
    //parameters - json file
@@ -154,6 +157,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  kill file //close(?) file
  do $system.OBJ.Delete(newClassNamePrefix_classname)
  do $system.OBJ.Load(temptargetfile,"c")
+ //TODO:Analyze status code, display error
  quit $$$OK
 }
 

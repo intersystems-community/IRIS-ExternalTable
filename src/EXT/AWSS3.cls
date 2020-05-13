@@ -110,8 +110,8 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
 ClassMethod GetFileHeader(filename, classname = "") As %Status
 {
     //s3://iris-external-table/file3.csv
-    set bucket = $p(filename,"/",3) //"deepsee-2018"
-    set key=$p(filename,"/",4,*) // "test.csv"
+    set bucket = $p(filename,"/",3) //"iris-external-table"
+    set key=$p(filename,"/",4,*) // "file3.csv"
     set object="/"_bucket_"/"_key
     //add non - us-east1 region here
     set server = bucket_".s3.amazonaws.com"

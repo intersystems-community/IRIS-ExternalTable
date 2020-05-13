@@ -107,6 +107,17 @@ jobs:
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
 
+      - name: Test quoted_csv file type
+        timeout-minutes: 1
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              'set sc = ##class(Test.SQLRunner).RunSQLFile("test/sql/local-quoted-csv.sql")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
+
       - name: Test Package Manager install
         timeout-minutes: 2
         run: |

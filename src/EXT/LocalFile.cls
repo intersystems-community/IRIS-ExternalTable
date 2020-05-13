@@ -78,6 +78,16 @@ ClassMethod GenerateReadNextLine(config, classname = "") As %String
 	   set code="    set res = ##class("_$classname()_").ReadNextLine("""_config.location_""","""_classname_""")"_$c(10)_
 				"    set %jsonline={}.%FromJSON(^||EXTRow)"_$c(10)_
 				"    quit res"
+   } elseif config.type="quoted_csv" {
+	   set code="    set res = ##class("_$classname()_").ReadNextLine("""_config.location_""","""_classname_""")"_$c(10)_
+				"    if '$data(%extRegEx) set %extRegEx=##class(%Regex.Matcher).%New("",?"""".+?""""|[^""""]+?(?=,)|[^""""]+"")"_$c(10)_
+				"    kill %csvline"_$c(10)_
+				//"    write ""%extRegEx "",$isobject(%extRegEx)"_$c(10)_
+				"    set %extRegEx.Text=^||EXTRow"_$c(10)_
+				"    while %extRegEx.Locate() {"_$c(10)_
+				"      set %csvline($i(%csvline))=$zstrip(%extRegEx.Group,""<"","","")"_$c(10)_
+				"    }"_$c(10)_
+				"    quit res"
    } else { 
 	   //default to CSV 
 	   set code="    quit ##class("_$classname()_").ReadNextLine("""_config.location_""","""_classname_""")"
@@ -98,6 +108,8 @@ ClassMethod GenerateRetrievalCode(config, propertyName, sqlFieldName, sqlColumnN
 	} else {
 		quit "s {*}=%jsonline."""_sqlFieldName_""""
    }
+  } elseif config.type="quoted_csv" {
+	  quit "s {*}=$get(%csvline("_(sqlColumnNumber-1)_"))"
    } else {
 	quit "s {*}=$p(^||EXTRow,"""_config.delimiter_""","_(sqlColumnNumber-1)_")"
    }
