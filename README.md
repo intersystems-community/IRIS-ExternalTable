@@ -46,6 +46,15 @@ git clone https://github.com/antonum/IRIS-ExternalTable.git
 iris session iris
 USER>set sc = ##class(%SYSTEM.OBJ).LoadDir("<path-to>/IRIS-ExternalTable", "ck",,1)
 ```
+## IRIS Package Manager (ZPM) - based installation
+
+IRIS External Table can be installed with ObjectScript Package Manager. https://openexchange.intersystems.com/package/ObjectScript-Package-Manager-2
+
+```
+USER> zpm
+zpm: USER>install external-table
+```
+
 ## Usage
 
 Create table as usual:
@@ -268,12 +277,3 @@ DROP TABLE must be used with %NODELDATA flag
 DROP TABLE external_table  %NODELDATA
 ```
 
-## IRIS Package Manager - based installation
-
-IRIS External Table can be installed with ObjectScript Package Manager. https://openexchange.intersystems.com/package/ObjectScript-Package-Manager-2
-
-Pending inclusion into official repository. Temporary install from the local repo:
-```
-USER> zpm
-zpm: USER>load <path-to>/IRIS-ExternalTable
-```
