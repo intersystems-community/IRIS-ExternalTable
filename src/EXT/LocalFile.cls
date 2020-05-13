@@ -100,10 +100,13 @@ ClassMethod GenerateRetrievalCode(config, propertyName, sqlFieldName, sqlColumnN
    if config.type="jsonlines" {
 	if config.jsonParser.%Get(sqlFieldName)'="" {
 	 /*   "jsonParser": {
-        "payment_options": "%jsonline.'payment_options'.%ToJSON()",
-        "rate_details_periods": "%jsonline.'rate_details'.periods.%ToJSON()"}
+        "payment_options": "%jsonline.'payment_options'",
+        "rate_details_periods": "%jsonline.'rate_details'.periods"}
 	*/
-		quit "s {*}="_$replace(config.jsonParser.%Get(sqlFieldName),"'","""")
+	//$case($isobject(obj.embed),1:obj.embed.%ToJSON(),0:obj.embed)
+	    set fieldExpression=config.jsonParser.%Get(sqlFieldName)
+		//return row.field.%ToJSON() of Attar or Object and row.field if not
+		quit "s {*}=$case($IsObject("_fieldExpression_"),1:"_fieldExpression_".%ToJSON(),0:"_fieldExpression_")"
 
 	} else {
 		quit "s {*}=%jsonline."""_sqlFieldName_""""

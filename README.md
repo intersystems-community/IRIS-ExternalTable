@@ -166,8 +166,8 @@ call EXT.ConvertToExternal(
         "location":"<path-to>/toronto-green-parking.json",
         "type": "jsonlines",
         "jsonParser": {
-            "payment_options": "%jsonline.\"payment_options\".%ToJSON()",
-            "rate_details_periods": "%jsonline.\"rate_details\".periods.%ToJSON()"
+            "payment_options": "%jsonline.\"payment_options\"",
+            "rate_details_periods": "%jsonline.\"rate_details\".periods"
         }
     }')
 ```
