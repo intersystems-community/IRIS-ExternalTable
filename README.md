@@ -268,8 +268,6 @@ DROP TABLE must be used with %NODELDATA flag
 DROP TABLE external_table  %NODELDATA
 ```
 
-SELECT TOP currently known to generate unpredictable results for the statement, immediatly following it. 
-
 ## IRIS Package Manager - based installation
 
 IRIS External Table can be installed with ObjectScript Package Manager. https://openexchange.intersystems.com/package/ObjectScript-Package-Manager-2

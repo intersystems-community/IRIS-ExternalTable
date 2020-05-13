@@ -63,6 +63,17 @@ jobs:
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
 
+      - name: Test local-multifile and SELECT TOP
+        timeout-minutes: 1
+        run: |
+            CONTAINER=`docker ps -lq`
+            /bin/echo -e '' \
+              'ZN "USER"\n' \
+              'set sc = ##class(Test.SQLRunner).RunSQLFile("test/sql/local-multifile.sql")\n' \
+              'if +sc=0 do ##class(%SYSTEM.Process).Terminate(,1)\n' \
+              'halt\n' \
+            | docker exec -i $CONTAINER iris session iris -U%SYS     
+
       - name: Test local-tcp-h.sql
         timeout-minutes: 1
         run: |

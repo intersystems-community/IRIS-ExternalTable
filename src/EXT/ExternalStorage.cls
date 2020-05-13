@@ -120,7 +120,10 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
   "<Global>^||EXTRow</Global>"_LNBR_
   "<Subscript name=""1"">"_LNBR_
   "<Expression>{RowID}</Expression>"_LNBR_
-  "<NextCode>s status=##class({{CLASSNAME}}).ReadNextLine({L1})"_LNBR_
+  "<NextCode>"_LNBR_
+  //" write {L1},"" === """_LNBR_
+  " kill:({L1}="""") %extstream,%extFileList"_LNBR_ //see also LocalFile ReadNextLine->if %extstream.AtEnd
+  " s status=##class({{CLASSNAME}}).ReadNextLine({L1})"_LNBR_
   " if status="""" set {L1}="""" QUIT"_LNBR_
   " s {L1}=""DO NOT USE!"""_LNBR_
   " QUIT"_LNBR_
