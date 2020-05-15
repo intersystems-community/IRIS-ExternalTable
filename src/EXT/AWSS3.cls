@@ -24,12 +24,16 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
         //consider caching, but allow for requery if instance role changes  
         set request.Timeout=1    
         set sc = request.Get("/latest/meta-data/iam/security-credentials/")
-        if '$IsObject(request.HttpResponse.Data) {
+        if '$IsObject(request.HttpResponse.Data) || (request.HttpResponse.StatusCode'=200) {
             //not on EC2 instance or no credentials fount
             quit $$$ERROR("NO AWS CREDENTIALS FOUND")
         }
         set role=request.HttpResponse.Data.ReadLine()
         set sc = request.Get("/latest/meta-data/iam/security-credentials/"_role)
+        if '$IsObject(request.HttpResponse.Data) || (request.HttpResponse.StatusCode'=200) {
+            //not on EC2 instance or no credentials fount
+            quit $$$ERROR("NO AWS CREDENTIALS FOUND")
+        }
         set json=request.HttpResponse.Data.Read(32000)
         set jsonobject={}.%FromJSON(json)
         set %extAWS("AccessKeyId")=jsonobject.AccessKeyId
