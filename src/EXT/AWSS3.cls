@@ -72,6 +72,9 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
 
 ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
 {
+    //DO NOT use this method for AWS. It's only for compatibility with AWS Signature method V2.
+    //All AWS reguios now accept AWS4-HMAC-SHA256 implemented in AWSSignRequestV4()
+    //Some older "S3 - compatible" services might require V2, so left here only for compatibility
     if '$data(%extAWS) {
 	    set sc=..GetAWSCredentials()
 	}
@@ -107,6 +110,81 @@ ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
     quit $$$OK
 }
 
+ClassMethod hex(str As %String)
+{
+	set hexstring = ""
+	for i=1:1:$L(str) 
+	{
+		set hexcode = $zh($a($e(str,i))) 
+		set:($l(hexcode)=1) hexcode = "0"_hexcode
+	 	set hexstring = hexstring _ hexcode
+	}
+	quit $ZCVT(hexstring,"L")
+}
+
+ClassMethod AWSSignRequestV4(ByRef request, requeststring) As %String
+{
+    //Reference:
+    //https://docs.aws.amazon.com/general/latest/gr/sigv4-signed-request-examples.html
+    //https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-authenticating-requests.html
+    //https://czak.pl/2015/09/15/s3-rest-api-with-curl.html
+    //https://github.com/mhart/aws4/blob/master/aws4.js - a lot of "SPECIAL CASES" for S3
+
+    #define HMACSHA256(%key,%msg) $system.Encryption.HMACSHA(256, $ZCONVERT(%msg,"O","UTF8"), %key)
+    #define HEX(%str) ..hex(%str)
+    #define HASHSHA256(%msg) $system.Encryption.SHAHash(256, $ZCONVERT(%msg,"O","UTF8"))
+    if '$data(%extAWS) {
+	    set sc=..GetAWSCredentials()
+	}
+    set awsAccessKeyId =%extAWS("AccessKeyId")
+    set awsSecretAccessKey = %extAWS("SecretAccessKey")
+    
+    set requestDate=$p($ZDT($H, 8,7),"T",1)
+    set requestDateTime=$replace($ZDT($H, 8,7),":","")
+    do request.SetHeader("X-Amz-Date",requestDateTime)
+    set awsContentHash=$$$HEX($$$HASHSHA256(""))
+    do request.SetHeader("X-Amz-Content-SHA256",awsContentHash)
+    set awsQueryString=$P(requeststring,"?",2) //delimiter=/&list-type=2&prefix=
+    //set awsQueryString=##class(%CSP.Page).EscapeHTML(awsQueryString)
+    set awsQueryString=$replace(awsQueryString,"/","%2F")
+    set awsCanonicalRequest=""_
+        $P(requeststring," ",1)_$c(10)_ // GET
+        $P($P(requeststring," ",2),"?",1)_$c(10)_ // /
+        awsQueryString_$c(10)_ // 
+        "host:"_request.Server_$c(10)_ // host:iris-external-table.s3.amazonaws.com
+        "x-amz-content-sha256:"_awsContentHash_$c(10)_
+        "x-amz-date:"_requestDateTime_$c(10)_
+        $c(10)_
+        "host;x-amz-content-sha256;x-amz-date"_$c(10)_
+        ""_awsContentHash
+
+    set awsRegion="us-east-1"
+    set awsService="s3"
+
+
+    set awsDateKey=$$$HMACSHA256("AWS4"_awsSecretAccessKey,requestDate)
+    set awsDateRegionKey=$$$HMACSHA256(awsDateKey,awsRegion)
+    set awsDateRegionServiceKey=$$$HMACSHA256(awsDateRegionKey,awsService)
+    set awsSigningKey=$$$HMACSHA256(awsDateRegionServiceKey,"aws4_request")
+    
+    set awsCredentialScope=requestDate_"/"_awsRegion_"/"_awsService_"/aws4_request"
+    set awsCanonicalRequestHash=$$$HEX($$$HASHSHA256(awsCanonicalRequest))
+    set awsStringToSign="AWS4-HMAC-SHA256"_$c(10)_requestDateTime_$c(10)_awsCredentialScope_$c(10)_awsCanonicalRequestHash
+   
+    //The 256-bit signature expressed as 64 lowercase hexadecimal characters. For example:
+    set signature=$$$HEX($$$HMACSHA256(awsSigningKey,awsStringToSign))
+    //Set pRequest.AuthorizationHeader= ..#SignatureMethodName_" Credential=" _ pRequest.AccessKey.AccessKey _ "/" _ credentialScope _ ", " _ "SignedHeaders=" _ signedHeaders _ ", " _ "Signature=" _ signatureHex
+    set authorization="AWS4-HMAC-SHA256 "_ 
+    //"Credential=AKIAIOSFODNN7EXAMPLE/20130524/us-east-1/s3/aws4_request, "_ 
+    "Credential="_awsAccessKeyId_"/"_requestDate_"/"_awsRegion_"/"_awsService_"/aws4_request, "_ 
+    //"SignedHeaders=host;x-amz-content-sha256;x-amz-date, "_ 
+    "SignedHeaders=host;x-amz-content-sha256;x-amz-date, "_ 
+    //"Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024"
+    "Signature="_signature
+    set request.Authorization=authorization
+    quit $$$OK
+}
+
 ClassMethod GetFileHeader(filename, classname = "") As %Status
 {
     //s3://iris-external-table/file3.csv
@@ -120,10 +198,10 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
     set request.Https=1                                 
     set request.SSLConfiguration="ISC.FeatureTracker.SSL.Config"
     //set request.ContentEncoding="x-gzip"
-    set requeststring="GET "_"/"_bucket_"/"_key //_"?response-content-encoding=x-gzip&response-content-type=text/plain"
-    set sc= ..AWSSignRequest(request,requeststring)
+    set url =  "/"_key 
+    set requeststring="GET "_"/"_key
+    set sc= ..AWSSignRequestV4(request,requeststring)
 
-    set url =  "/"_key //_"?response-content-encoding=x-gzip&response-content-type=text/plain"
     //do request.OutputHeaders()
     set sc = request.Get(url)
     //do request.HttpResponse.OutputHeaders()
@@ -152,10 +230,9 @@ ClassMethod GetFileList(location) As %Status
     set request.Server = server       
     set request.Https=1                                 
     set request.SSLConfiguration="ISC.FeatureTracker.SSL.Config"
-    set requeststring="GET "_"/"_bucket_"/"_key
-    set sc= ..AWSSignRequest(request,requeststring)
-
-    set url =  "/"_key
+    set url =  "/?delimiter=/&list-type=2&prefix="_key
+    set requeststring="GET "_url
+    set sc= ..AWSSignRequestV4(request,requeststring)
     //do request.OutputHeaders()
     set sc = request.Get(url)
     //do request.HttpResponse.OutputHeaders()
