@@ -19,8 +19,15 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
         //S3-AdminAccess
         //curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/S3-AdminAccess
         set request = ##class(%Net.HttpRequest).%New()                         
-        set request.Server = "169.254.169.254"       
+        set request.Server = "169.254.169.254"
+        //this adds 1 second+ timeout to every request on unauthenticated system
+        //consider caching, but allow for requery if instance role changes  
+        set request.Timeout=1    
         set sc = request.Get("/latest/meta-data/iam/security-credentials/")
+        if '$IsObject(request.HttpResponse.Data) {
+            //not on EC2 instance or no credentials fount
+            quit $$$ERROR("NO AWS CREDENTIALS FOUND")
+        }
         set role=request.HttpResponse.Data.ReadLine()
         set sc = request.Get("/latest/meta-data/iam/security-credentials/"_role)
         set json=request.HttpResponse.Data.Read(32000)
@@ -135,6 +142,9 @@ ClassMethod AWSSignRequestV4(ByRef request, requeststring) As %String
     #define HASHSHA256(%msg) $system.Encryption.SHAHash(256, $ZCONVERT(%msg,"O","UTF8"))
     if '$data(%extAWS) {
 	    set sc=..GetAWSCredentials()
+        if $$$ISERR(sc) { //no credentials. attempt unauthenticated request
+            quit $$$OK
+        }
 	}
     set awsAccessKeyId =%extAWS("AccessKeyId")
     set awsSecretAccessKey = %extAWS("SecretAccessKey")
