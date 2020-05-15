@@ -26,7 +26,12 @@ ClassMethod ReadNextLine(location, classname = "") As %String
 {
   	if '$IsObject($g(%extstream)) {
 		if '$data(%extFileList) {
-			do ..GetFileList(location)
+			set sc=..GetFileList(location)
+			if $$$ISERR(sc) && (sc["WRONG REGION"){
+				//retry (region should be set by now)
+				//write !,"==== RETRYING",!
+				set sc=..GetFileList(location)
+			}
 		}
 		set %extFileNumber=1
 		do ..GetFileHeader(%extFileList(%extFileNumber),classname)

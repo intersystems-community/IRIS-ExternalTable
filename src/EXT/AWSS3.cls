@@ -73,7 +73,7 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
 ClassMethod AWSSignRequest(ByRef request, requeststring) As %String
 {
     //DO NOT use this method for AWS. It's only for compatibility with AWS Signature method V2.
-    //All AWS reguios now accept AWS4-HMAC-SHA256 implemented in AWSSignRequestV4()
+    //All AWS reginos now accept AWS4-HMAC-SHA256 implemented in AWSSignRequestV4()
     //Some older "S3 - compatible" services might require V2, so left here only for compatibility
     if '$data(%extAWS) {
 	    set sc=..GetAWSCredentials()
@@ -158,7 +158,9 @@ ClassMethod AWSSignRequestV4(ByRef request, requeststring) As %String
         "host;x-amz-content-sha256;x-amz-date"_$c(10)_
         ""_awsContentHash
 
-    set awsRegion="us-east-1"
+    set bucket = $p(request.Server,".",1)
+    //set ^EXT.S3BucketRegion("covid19-lake")="us-east-2"
+    set awsRegion=$get(^EXT.S3BucketRegion(bucket),"us-east-1")
     set awsService="s3"
 
 
@@ -192,7 +194,12 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
     set key=$p(filename,"/",4,*) // "file3.csv"
     set object="/"_bucket_"/"_key
     //add non - us-east1 region here
-    set server = bucket_".s3.amazonaws.com"
+    set awsRegion=$get(^EXT.S3BucketRegion(bucket),"us-east-1")
+    if awsRegion="us-east-1" { 
+        set server = bucket_".s3.amazonaws.com"
+    } else {
+        set server = bucket_".s3."_awsRegion_".amazonaws.com"
+    }
     set request = ##class(%Net.HttpRequest).%New()                         
     set request.Server = server       
     set request.Https=1                                 
@@ -204,8 +211,11 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
 
     //do request.OutputHeaders()
     set sc = request.Get(url)
-    //do request.HttpResponse.OutputHeaders()
-    //do request.HttpResponse.OutputToDevice()
+    if request.HttpResponse.StatusCode'=200 {
+        write !,request.HttpResponse.StatusCode," ",request.HttpResponse.StatusLine
+        //do request.HttpResponse.OutputHeaders()
+        //do request.HttpResponse.OutputToDevice()
+    }
     set %extstream=request.HttpResponse.Data
     Set %extstream.LineTerminator=$char(10)
 	quit $$$OK
@@ -215,17 +225,22 @@ ClassMethod GetFileList(location) As %Status
 {
     kill %extFileList
     //s3://iris-external-table/
-    if $Extract(location,$Length(location))'="/" {
+    /*if $Extract(location,$Length(location))'="/" {
         //if location does not end with '/' consider it the single file
         set %extFileList=1
         set %extFileList(1)=location
         quit $$$OK
-    }
+    }*/
     set bucket = $p(location,"/",3) 
     set key=$p(location,"/",4,*) 
     set object="/"_bucket_"/"_key
     //add non - us-east1 region here
-    set server = bucket_".s3.amazonaws.com"
+    set awsRegion=$get(^EXT.S3BucketRegion(bucket),"us-east-1")
+    if awsRegion="us-east-1" { 
+        set server = bucket_".s3.amazonaws.com"
+    } else {
+        set server = bucket_".s3."_awsRegion_".amazonaws.com"
+    }
     set request = ##class(%Net.HttpRequest).%New()                         
     set request.Server = server       
     set request.Https=1                                 
@@ -235,8 +250,20 @@ ClassMethod GetFileList(location) As %Status
     set sc= ..AWSSignRequestV4(request,requeststring)
     //do request.OutputHeaders()
     set sc = request.Get(url)
-    //do request.HttpResponse.OutputHeaders()
-    //do request.HttpResponse.OutputToDevice()
+    if request.HttpResponse.StatusCode'=200 {
+        //write !,request.HttpResponse.StatusCode," ",request.HttpResponse.StatusLine
+        //do request.HttpResponse.OutputHeaders()
+        //X-AMZ-BUCKET-REGION: us-east-2
+        set region=request.HttpResponse.GetHeader("X-AMZ-BUCKET-REGION")
+        if (region'="") && (region'="us-east-1") && (region'=$get(^EXT.S3BucketRegion(bucket))) {
+            //write !, "Setting bucket header permanently to ", region,!
+            set ^EXT.S3BucketRegion(bucket)=region
+            quit $$$ERROR("WRONG REGION")
+            //set sc= ..AWSSignRequestV4(request,requeststring)
+        }
+        //s %headers=request.HttpResponse.Headers
+        //do request.HttpResponse.OutputToDevice()
+    }
     set stream=request.HttpResponse.Data
     set data=stream.Read(32000)
     //write data
@@ -244,7 +271,7 @@ ClassMethod GetFileList(location) As %Status
     for i=1:1:numkeys-1 {
         set file=$p($p(data,"<Key>",i+1),"</Key>")
         //write !,key
-        set %extFileList($I(%extFileList))=location_file
+        set %extFileList($I(%extFileList))="s3://"_bucket_"/"_file
     }
     quit $$$OK
 }
