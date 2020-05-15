@@ -98,7 +98,7 @@ ClassMethod GenerateReadNextLine(config, classname = "") As %String
 ClassMethod GenerateRetrievalCode(config, propertyName, sqlFieldName, sqlColumnNumber) As %String
 {
    if config.type="jsonlines" {
-	if config.jsonParser.%Get(sqlFieldName)'="" {
+	if $isobject(config.jsonParser) && (config.jsonParser.%Get(sqlFieldName)'="") {
 	 /*   "jsonParser": {
         "payment_options": "%jsonline.'payment_options'",
         "rate_details_periods": "%jsonline.'rate_details'.periods"}

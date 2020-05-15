@@ -13,7 +13,7 @@ call EXT.ConvertToExternal(
     '{
     "adapter":"EXT.AWSS3",
     "location":"s3://covid19-lake/rearc-covid-19-nyt-data-in-usa/json/us-states/",
-    "type": "json"
+    "type": "jsonlines"
     }' 
 )
  -- select from external table. Try to manually change test.csv file and rerun
