@@ -17,7 +17,8 @@ call EXT.ConvertToExternal(
     }' 
 )
  -- select from external table. Try to manually change test.csv file and rerun
-select TOP 10 * from covid_by_state
+select  top 10 * from "covid_by_state"
+order by "date" desc
  -- cleanup
 drop table covid_by_state %NODELDATA
  -- Done

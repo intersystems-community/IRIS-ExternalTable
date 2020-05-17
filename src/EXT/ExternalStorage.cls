@@ -125,7 +125,7 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
   " kill:({L1}="""") %extstream,%extFileList"_LNBR_ //see also LocalFile ReadNextLine->if %extstream.AtEnd
   " s status=##class({{CLASSNAME}}).ReadNextLine({L1})"_LNBR_
   " if status="""" set {L1}="""" QUIT"_LNBR_
-  " s {L1}=""DO NOT USE!"""_LNBR_
+  " s {L1}=$i({L1})"_LNBR_
   " QUIT"_LNBR_
   "</NextCode>"_LNBR_
   "</Subscript>"_LNBR_
