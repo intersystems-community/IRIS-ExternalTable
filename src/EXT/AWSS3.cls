@@ -158,6 +158,15 @@ ClassMethod AWSSignRequestV4(ByRef request, requeststring) As %String
     do request.SetHeader("X-Amz-Date",requestDateTime)
     set awsContentHash=$$$HEX($$$HASHSHA256(""))
     do request.SetHeader("X-Amz-Content-SHA256",awsContentHash)
+
+    set crToken=""
+    set signedHeaderToken=""
+    if $d(%extAWS("Token")) {
+        do request.SetHeader("X-Amz-Security-Token",%extAWS("Token"))
+        set crToken="x-amz-security-token:"_%extAWS("Token")_$c(10)
+        set signedHeaderToken=";x-amz-security-token"
+    }
+
     set awsQueryString=$P(requeststring,"?",2) //delimiter=/&list-type=2&prefix=
     //set awsQueryString=##class(%CSP.Page).EscapeHTML(awsQueryString)
     set awsQueryString=$replace(awsQueryString,"/","%2F")
@@ -168,8 +177,9 @@ ClassMethod AWSSignRequestV4(ByRef request, requeststring) As %String
         "host:"_request.Server_$c(10)_ // host:iris-external-table.s3.amazonaws.com
         "x-amz-content-sha256:"_awsContentHash_$c(10)_
         "x-amz-date:"_requestDateTime_$c(10)_
+        crToken_
         $c(10)_
-        "host;x-amz-content-sha256;x-amz-date"_$c(10)_
+        "host;x-amz-content-sha256;x-amz-date"_signedHeaderToken_$c(10)_
         ""_awsContentHash
 
     set bucket = $p(request.Server,".",1)
@@ -194,13 +204,10 @@ ClassMethod AWSSignRequestV4(ByRef request, requeststring) As %String
     //"Credential=AKIAIOSFODNN7EXAMPLE/20130524/us-east-1/s3/aws4_request, "_ 
     "Credential="_awsAccessKeyId_"/"_requestDate_"/"_awsRegion_"/"_awsService_"/aws4_request, "_ 
     //"SignedHeaders=host;x-amz-content-sha256;x-amz-date, "_ 
-    "SignedHeaders=host;x-amz-content-sha256;x-amz-date, "_ 
+    "SignedHeaders=host;x-amz-content-sha256;x-amz-date"_signedHeaderToken_", "_ 
     //"Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024"
     "Signature="_signature
     set request.Authorization=authorization
-    if $d(%extAWS("Token")) {
-        do request.SetHeader("X-Amz-Security-Token",%extAWS("Token"))
-    }
     quit $$$OK
 }
 
