@@ -129,7 +129,7 @@ jobs:
               'halt\n' \
             | docker exec -i $CONTAINER iris session iris -U%SYS     
 
-      - name: Unauthenticated all to S3, non-default region
+      - name: Test Unauthenticated call to S3, non-default region, order by
         timeout-minutes: 1
         run: |
             CONTAINER=`docker ps -lq`

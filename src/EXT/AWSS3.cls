@@ -198,6 +198,9 @@ ClassMethod AWSSignRequestV4(ByRef request, requeststring) As %String
     //"Signature=fe5f80f77d5fa3beca038a248ff027d0445342fe2855ddc963176630326f1024"
     "Signature="_signature
     set request.Authorization=authorization
+    if $d(%extAWS("Token")) {
+        do request.SetHeader("X-Amz-Security-Token",%extAWS("Token"))
+    }
     quit $$$OK
 }
 
