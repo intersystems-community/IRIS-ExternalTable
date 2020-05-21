@@ -1,11 +1,11 @@
 Class EXT.LocalFile [ Abstract ]
 {
 
-ClassMethod GetFileHeader(filename, classname = "") As %Status
+ClassMethod GetFileHeader(filename, ByRef stream, classname = "") As %Status
 {
-	Set %extstream=##class(%Stream.FileCharacter).%New()
-	Set sc=%extstream.LinkToFile(filename)
-	Set %extstream.LineTerminator=$char(10)
+	Set stream=##class(%Stream.FileCharacter).%New()
+	Set sc=stream.LinkToFile(filename)
+	Set stream.LineTerminator=$char(10)
 	quit $$$OK
 }
 
@@ -26,15 +26,15 @@ ClassMethod ReadNextLine(location, classname = "") As %String
 {
   	if '$IsObject($g(%extstream)) {
 		if '$data(%extFileList) {
-			set sc=..GetFileList(location)
+			set sc=..GetFileList(location,.%extFileList)
 			if $$$ISERR(sc) && (sc["WRONG REGION"){
 				//retry (region should be set by now)
 				//write !,"==== RETRYING",!
-				set sc=..GetFileList(location)
+				set sc=..GetFileList(location,.%extFileList)
 			}
 		}
 		set %extFileNumber=1
-		do ..GetFileHeader(%extFileList(%extFileNumber),classname)
+		do ..GetFileHeader(%extFileList(%extFileNumber),.%extstream,classname)
 		do ..SkipHeaders(classname)
 	}
 	if %extstream.AtEnd {
@@ -44,7 +44,7 @@ ClassMethod ReadNextLine(location, classname = "") As %String
 			kill %extFileList
 			quit ""
 		}
-		do ..GetFileHeader(%extFileList(%extFileNumber),classname)
+		do ..GetFileHeader(%extFileList(%extFileNumber),.%extstream,classname)
 		do ..SkipHeaders(classname)
 	}
 	if '%extstream.AtEnd {
@@ -55,9 +55,9 @@ ClassMethod ReadNextLine(location, classname = "") As %String
 }
 
 /// method would initialize list of files in %extFileList array
-ClassMethod GetFileList(location, classname = "") As %Status
+ClassMethod GetFileList(location, ByRef fileList, classname = "") As %Status
 {
-   kill %extFileList
+   kill fileList
    
    set resultSet = ##class(%ResultSet).%New()
    set resultSet.ClassName = "%Library.File"
@@ -65,12 +65,12 @@ ClassMethod GetFileList(location, classname = "") As %Status
    set status = resultSet.%Execute($get(^EXT.Config("LocalDir"),"")_location)
    if $$$ISERR(status) {
 	  //if resultset returns nothing - assume that filename was passed
-	  set %extFileList($I(%extFileList))=$get(^EXT.Config("LocalDir"),"")_location
+	  set fileList($I(fileList))=$get(^EXT.Config("LocalDir"),"")_location
    }
    else {
 		while (resultSet.%Next()) {
 			//write !, resultSet.Name
-			set %extFileList($I(%extFileList))=resultSet.Name
+			set fileList($I(fileList))=resultSet.Name
 		}
 
    }

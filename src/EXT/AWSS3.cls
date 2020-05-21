@@ -211,7 +211,7 @@ ClassMethod AWSSignRequestV4(ByRef request, requeststring) As %String
     quit $$$OK
 }
 
-ClassMethod GetFileHeader(filename, classname = "") As %Status
+ClassMethod GetFileHeader(filename, ByRef stream, classname = "") As %Status
 {
     //s3://iris-external-table/file3.csv
     set bucket = $p(filename,"/",3) //"iris-external-table"
@@ -240,14 +240,14 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
         //do request.HttpResponse.OutputHeaders()
         //do request.HttpResponse.OutputToDevice()
     }
-    set %extstream=request.HttpResponse.Data
-    Set %extstream.LineTerminator=$char(10)
+    set stream=request.HttpResponse.Data
+    Set stream.LineTerminator=$char(10)
 	quit $$$OK
 }
 
-ClassMethod GetFileList(location) As %Status
+ClassMethod GetFileList(location, ByRef fileList) As %Status
 {
-    kill %extFileList
+    kill fileList
     //s3://iris-external-table/
     /*if $Extract(location,$Length(location))'="/" {
         //if location does not end with '/' consider it the single file
@@ -295,7 +295,7 @@ ClassMethod GetFileList(location) As %Status
     for i=1:1:numkeys-1 {
         set file=$p($p(data,"<Key>",i+1),"</Key>")
         //write !,key
-        set %extFileList($I(%extFileList))="s3://"_bucket_"/"_file
+        set fileList($I(fileList))="s3://"_bucket_"/"_file
     }
     quit $$$OK
 }

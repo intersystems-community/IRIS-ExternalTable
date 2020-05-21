@@ -3,6 +3,7 @@ Class Test.SQLRunner [ Abstract ]
 
 ClassMethod RunSQLFile(filename) As %Status
 {
+    // do ##class(Test.SQLRunner).RunSQLFile("test/sql/local-multifile.sql")
     set teststatus=$$$OK
     if '##class(%File).Exists($get(^EXT.Config("LocalDir"))_filename) {
         write !,"ERROR: Can not find file:"_ $get(^EXT.Config("LocalDir"))_filename

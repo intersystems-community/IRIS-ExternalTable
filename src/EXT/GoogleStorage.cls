@@ -1,9 +1,9 @@
 Class EXT.GoogleStorage Extends EXT.LocalFile
 {
 
-ClassMethod GetFileList(location) As %Status
+ClassMethod GetFileList(location, ByRef fileList) As %Status
 {
-    kill %extFileList
+    kill fileList
     //curl -H "Authorization: Bearer $TOKEN" "https://storage.googleapis.com/storage/v1/b/iris-external-table/o?prefix="
     set tmpfilename="gsutil_ls.txt" //##class(%File).TempFilename()
     set args=2
@@ -14,7 +14,7 @@ ClassMethod GetFileList(location) As %Status
     set sc=file.LinkToFile(tmpfilename)
     while 'file.AtEnd {
         //write !, file.ReadLine()
-        set %extFileList($I(%extFileList))=file.ReadLine()
+        set fileList($I(fileList))=file.ReadLine()
     } 
     quit $$$OK
 }
@@ -38,7 +38,7 @@ ClassMethod GetAccessToken() As %String
     quit " Bearer "_%extGoogleAuthToken
 }
 
-ClassMethod GetFileHeader(filename, classname = "") As %Status
+ClassMethod GetFileHeader(filename, ByRef stream, classname = "") As %Status
 {
 	//curl -H "Authorization: Bearer $(gcloud auth print-access-token)" \
     //"https://storage.googleapis.com/download/storage/v1/b/<bucket>/o/<key>?alt=media"
@@ -58,8 +58,8 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
     set sc = request.Get(url)
     //do request.HttpResponse.OutputHeaders()
     //do request.HttpResponse.OutputToDevice
-    set %extstream=request.HttpResponse.Data
-    Set %extstream.LineTerminator=$char(10)
+    set stream=request.HttpResponse.Data
+    Set stream.LineTerminator=$char(10)
 	quit $$$OK
 }
 
