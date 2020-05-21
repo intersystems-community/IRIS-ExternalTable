@@ -1,10 +1,10 @@
 Class EXT.Azure Extends EXT.LocalFile
 {
 
-ClassMethod GetFileList(location) As %Status
+ClassMethod GetFileList(location, ByRef fileList) As %Status
 {
     //  https://mystorageaccount.blob.core.windows.net/container/
-    kill %extFileList
+    kill fileList
     set server=$p(location,"/",3)
     set key=$p(location,"/",4,*)
     set request = ##class(%Net.HttpRequest).%New()                         
@@ -25,7 +25,7 @@ ClassMethod GetFileList(location) As %Status
     for i=1:1:numkeys-1 {
         set file=$p($p(data,"<Name>",i+1),"</Name>")
         //write !,key
-        set %extFileList($I(%extFileList))=location_file
+        set fileList($I(fileList))=location_file
     }    quit $$$OK
 }
 
@@ -64,7 +64,7 @@ ClassMethod GetAccessToken() As %String
     quit " Bearer "_%extAzureAuthToken
 }
 
-ClassMethod GetFileHeader(filename, classname = "") As %Status
+ClassMethod GetFileHeader(filename, ByRef stream, classname = "") As %Status
 {
     //  https://mystorageaccount.blob.core.windows.net/container/myfile.txt
     set server=$p(filename,"/",3)
@@ -81,8 +81,8 @@ ClassMethod GetFileHeader(filename, classname = "") As %Status
     set sc = request.Get(url)
     //do request.HttpResponse.OutputHeaders()
     //do request.HttpResponse.OutputToDevice
-    set %extstream=request.HttpResponse.Data
-    Set %extstream.LineTerminator=$char(10)
+    set stream=request.HttpResponse.Data
+    Set stream.LineTerminator=$char(10)
 	quit $$$OK
 }
 

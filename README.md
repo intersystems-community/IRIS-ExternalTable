@@ -279,3 +279,30 @@ DROP TABLE must be used with %NODELDATA flag
 DROP TABLE external_table  %NODELDATA
 ```
 
+## Using cloud adapters outside of ExternalTable
+ 
+ Each of the cloud adapters (EXT.AWSS3, EXT.Azure and EXT.GoogleStorage) implements methods GetFileList() and GetFileHeader() that can be used to access files
+ stored in the cloud.
+ 
+ *GetFileList("s3://mybucket/",.fileList)* returns the list of files in the bucket/folder in the variable fileList. Note - vatiable must be passed by reference .variableName
+
+*GetFileHeader("s3://mybucket/",.fileHeader)* returns the pointer to the %Stream object, containing the content of the file. You can perform all the usual %Stream operations with it, such as Read() ReadLine(), Rewind(), check for fileHeader.AtEnd etc. https://docs.intersystems.com/irislatest/csp/documatic/%25CSP.Documatic.cls 
+```ObjectScript
+ set sc=##class(EXT.AWSS3).GetFileList("s3://anton-fhir/data/",.fileList)
+ /* list of file in the bucket is now at fileList
+    zw fileList 
+    fileList=18
+    fileList(1)="s3://anton-fhir/data/Adina377_Corkery305_cb12851a-2ebd-4c15-88a9-5bee0f308afc.json"
+    fileList(2)="s3://anton-fhir/data/Alfred550_Fadel536_155f7362-37da-4e09-a149-a2fec35e20fa.json"
+    ...
+    fileList(18)="s3://anton-fhir/data/practitionerInformation1585754149520.json"
+ */
+
+ for i=1:1:fileList {
+    write !,"Loading:  ",fileList(i)
+    set sc=##class(EXT.AWSS3).GetFileHeader(fileList(i),.fileHeader)
+    //pointer to %Stream object is now in fileHeader
+    //output file content to the console:
+    write !,fileHeader.Read()
+ }
+ ```
