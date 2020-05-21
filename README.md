@@ -4,6 +4,8 @@
 
 IRIS External Table allows you to access files in local filesystem and cloud BLOB storage such as AWS S3 and Azure BLOB Storage as regular IRIS SQL tables. The resulting tables are full-featured IRIS tables and can be JOINed with other tables, used in subselects, used for bulk loading the data with `INSERT INTO localtable SELECT FROM external_table` etc.
 
+![External Table](./images/ExternalTableDiagram.png)
+
 External tables can be based on a single file or directory/bucket. Using tables, based on multiple files is ideal for situations like log processing, where data is constantly added as new files.
 
 Let's say you have the following text file, located in S3 bucket at `s3:/mybucket/myfile.csv`:
