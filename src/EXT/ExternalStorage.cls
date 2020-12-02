@@ -1,9 +1,16 @@
 Class EXT.ExternalStorage [ Abstract ]
 {
 
-ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = ConvertToExternal, SqlProc ]
+ClassMethod ConvertToExternal(tablename As %String, parameters As %String, verbose As %Boolean = 1) As %Status [ SqlName = ConvertToExternal, SqlProc ]
 {
- if $e($zstrip(parameters,"<W"))="{" {
+	set sc = $$$OK, verboseflag = $s(verbose:" d", 1:" -d")
+	try {
+		
+ if $isobject(parameters) && parameters.%IsA("%DynamicObject") {
+	 // direct ObjectScript invocation
+	set config = parameters
+ }
+ elseif $e($zstrip(parameters,"<W"))="{" {
     //parameters - json string
     set config={}.%FromJSON(parameters)
    //TODO att error trapping for JSON parse errors
@@ -20,31 +27,30 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  set configTxt=$replace(configTxt,"""","'")
  
  set LNBR=$c(10)
-
- //s classname=tablename //add proper tablename detection
- if $length(tablename,".")=1 {
-    //no schema defined, use default
-    //TODO: add detection of default schema if different form SQLUser
-    set tablename="SQLUser."_tablename 
+ 
+ if '$SYSTEM.SQL.TableExists(tablename,.metadata) {
+	 set sc = $$$ERROR($$$TableDoesNotExist, tablename)
+	 quit
  }
- set sql="SELECT ID FROM %Dictionary.CompiledClass where SqlQualifiedNameQ='"_tablename_"'"
- set rs=$system.SQL.Execute(sql)
- set sc=rs.%Next()
- if sc'=1 { //table not found
-   //TODO: add proper halt of stored procedure with error report
-   write !,"ERROR: Can not find table: "_tablename
-   //set %sqlcontext.%SQLCODE=9999
-   //set %sqlcontext.%ROWCOUNT=0
-   //set %sqlcontext.%Message="Can not find table: "_tablename
-   //quit 9999
+ set classname = $lg(metadata,3)
+ 
+ // check if this class was already processed
+ if ##class(%Dictionary.StorageDefinition).%ExistsId(classname_"||EXTStorage") {
+	 set sc = $$$ERROR($$$GeneralError, "Table "_tablename_" already has external storage")
+	 quit
  }
- set classname=rs.%Get("ID")
+ //set classdef = ##class(%Dictionary.CompiledClass).%OpenId(classname)
+ 
+ 
  set tempsourcefile="tempsrc.cls"
  set temptargetfile="temptgt.cls"
  set newClassNamePrefix=""
- Set sc=$system.OBJ.ExportUDL(classname_".cls",tempsourcefile)
+ Set sc=$system.OBJ.ExportUDL(classname_".cls",tempsourcefile,verboseflag)
+ quit:$$$ISERR(sc)
  Set file=##class(%Stream.FileCharacter).%New()
  Set sc=file.LinkToFile(tempsourcefile)
+ quit:$$$ISERR(sc)
+ 
  kill tmp
  set targetProperties=LNBR
  set storageProperties=LNBR
@@ -158,10 +164,16 @@ ClassMethod ConvertToExternal(tablename, parameters) As %Status [ SqlName = Conv
  Do file.Write(storageTail)
  Do file.Write(classTail)
  kill file //close(?) file
- do $system.OBJ.Delete(newClassNamePrefix_classname)
- do $system.OBJ.Load(temptargetfile,"c")
- //TODO:Analyze status code, display error
- quit $$$OK
+ do $system.OBJ.Delete(newClassNamePrefix_classname,verboseflag)
+ do $system.OBJ.Load(temptargetfile,"c"_verboseflag)
+ } catch (ex) {
+	 set sc = ex.AsStatus()
+ }
+ if verbose && $$$ISERR(sc) {
+	 do $system.OBJ.DisplayError(sc)
+	 write !
+ }
+ quit sc
 }
 
 }

@@ -8,7 +8,7 @@ IRIS External Table allows you to access files in local filesystem and cloud BLO
 
 External tables can be based on a single file or directory/bucket. Using tables, based on multiple files is ideal for situations like log processing, where data is constantly added as new files.
 
-Let's say you have the following text file, located in S3 bucket at `s3:/mybucket/myfile.csv`:
+Let's say you have the following text file, located in S3 bucket at `s3://mybucket/myfile.csv`:
 ```sql
 name,personid
 anton,1
@@ -26,11 +26,11 @@ CALL EXT.ConvertToExternal(
     'person.firstname',
     '{
         "adapter":"EXT.AWSS3",
-        "location":"s3:/mybucket/myfile.csv",
+        "location":"s3://mybucket/myfile.csv",
         "delimiter": ",",
         "skipHeaders": 1
     }')
--- change "s3:/mybucket/myfile.csv" to "/myfolder/myfile.csv" and "EXT.AWSS3" to "EXT.LocalFile" to use the local filesystem instead
+-- change "s3://mybucket/myfile.csv" to "/myfolder/myfile.csv" and "EXT.AWSS3" to "EXT.LocalFile" to use the local filesystem instead
 
 SELECT * FROM person.firstname
 firstname	personid
