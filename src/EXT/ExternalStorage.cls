@@ -39,7 +39,6 @@ ClassMethod ConvertToExternal(tablename As %String, parameters As %String, verbo
 	 set sc = $$$ERROR($$$GeneralError, "Table "_tablename_" already has external storage")
 	 quit
  }
- //set classdef = ##class(%Dictionary.CompiledClass).%OpenId(classname)
  
  
  set tempsourcefile="tempsrc.cls"
@@ -79,7 +78,7 @@ ClassMethod ConvertToExternal(tablename As %String, parameters As %String, verbo
  }
  // SqlTableName = ""{{TABLENAME}}"",
  set classHead=""_
- "Class {{CLASSNAME}} Extends (%Persistent, EXT.ExternalStorage) [ SqlRowIdPrivate, DdlAllowed, StorageStrategy = EXTStorage,  SqlTableName = "_$p(tablename,".",2)_" ]"_LNBR_
+ "Class {{CLASSNAME}} Extends (%Persistent, EXT.ExternalStorage) [ SqlRowIdPrivate, DdlAllowed, StorageStrategy = EXTStorage,  SqlTableName = "_$p(tablename,".",*)_" ]"_LNBR_
   "{"_LNBR_
   "Parameter ExternalTableParameters = """_configTxt_""";"_LNBR_
   "Parameter ExternalTableLocation = """_config.location_""";"_LNBR_
