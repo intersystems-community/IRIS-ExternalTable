@@ -2,13 +2,15 @@
 
 ![CI](https://github.com/antonum/IRIS-ExternalTable/workflows/CI/badge.svg)
 
-IRIS External Table allows you to access files in local filesystem and cloud BLOB storage such as AWS S3 and Azure BLOB Storage as regular IRIS SQL tables. The resulting tables are full-featured IRIS tables and can be JOINed with other tables, used in subselects, used for bulk loading the data with `INSERT INTO localtable SELECT FROM external_table` etc.
+IRIS External Table allows you to access files in local filesystem and cloud BLOB storage such as AWS S3 and Azure BLOB Storage as regular IRIS SQL tables. The resulting tables can be queried like regular IRIS tables, can be JOINed with other tables, used in subselects, used for bulk loading the data into another place with `INSERT INTO localtable SELECT FROM external_table` etc.
+
+Note that the 
 
 ![External Table](./images/ExternalTableDiagram.png)
 
 External tables can be based on a single file or directory/bucket. Using tables, based on multiple files is ideal for situations like log processing, where data is constantly added as new files.
 
-Let's say you have the following text file, located in S3 bucket at `s3:/mybucket/myfile.csv`:
+Let's say you have the following text file, located in S3 bucket at `s3://mybucket/myfile.csv`:
 ```sql
 name,personid
 anton,1
@@ -26,11 +28,11 @@ CALL EXT.ConvertToExternal(
     'person.firstname',
     '{
         "adapter":"EXT.AWSS3",
-        "location":"s3:/mybucket/myfile.csv",
+        "location":"s3://mybucket/myfile.csv",
         "delimiter": ",",
         "skipHeaders": 1
     }')
--- change "s3:/mybucket/myfile.csv" to "/myfolder/myfile.csv" and "EXT.AWSS3" to "EXT.LocalFile" to use the local filesystem instead
+-- change "s3://mybucket/myfile.csv" to "/myfolder/myfile.csv" and "EXT.AWSS3" to "EXT.LocalFile" to use the local filesystem instead
 
 SELECT * FROM person.firstname
 firstname	personid
