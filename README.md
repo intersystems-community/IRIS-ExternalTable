@@ -48,7 +48,7 @@ Delimited files and JSON can be used as data sources. Local filesystem, AWS S3, 
 ```
 git clone https://github.com/antonum/IRIS-ExternalTable.git
 iris session iris
-USER>set sc = ##class(%SYSTEM.OBJ).LoadDir("<path-to>/IRIS-ExternalTable", "ck",,1)
+USER>set sc = ##class(%SYSTEM.OBJ).LoadDir("<path-to>/IRIS-ExternalTable/src", "ck",,1)
 ```
 ## IRIS Package Manager (ZPM) - based installation
 

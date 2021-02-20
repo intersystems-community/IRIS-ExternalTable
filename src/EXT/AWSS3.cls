@@ -10,7 +10,7 @@ ClassMethod GetAWSCredentials(profile = "default") As %Status
         set useEnvVar=1
     } elseif ##class(%File).Exists($system.Util.GetEnviron("HOME")_"/.aws/credentials") {
         set useCredentialsFile=1
-    } else {
+    } else { 
         set useInstanceMetadata=1
     }
 
@@ -298,6 +298,38 @@ ClassMethod GetFileList(location, ByRef fileList) As %Status
         set fileList($I(fileList))="s3://"_bucket_"/"_file
     }
     quit $$$OK
+}
+
+ClassMethod DeleteFile(filename, classname = "") As %Status
+{
+    //s3://iris-external-table/file3.csv
+    set bucket = $p(filename,"/",3) //"iris-external-table"
+    set key=$p(filename,"/",4,*) // "file3.csv"
+    set object="/"_bucket_"/"_key
+    //add non - us-east1 region here
+    set awsRegion=$get(^EXT.S3BucketRegion(bucket),"us-east-1")
+    if awsRegion="us-east-1" { 
+        set server = bucket_".s3.amazonaws.com"
+    } else {
+        set server = bucket_".s3."_awsRegion_".amazonaws.com"
+    }
+    set request = ##class(%Net.HttpRequest).%New()                         
+    set request.Server = server       
+    set request.Https=1                                 
+    set request.SSLConfiguration="ISC.FeatureTracker.SSL.Config"
+    //set request.ContentEncoding="x-gzip"
+    set url =  "/"_key 
+    set requeststring="DELETE "_"/"_key
+    set sc= ..AWSSignRequestV4(request,requeststring)
+
+    //do request.OutputHeaders()
+    set sc = request.Delete(url)
+    if request.HttpResponse.StatusCode'=204 {
+        write !,request.HttpResponse.StatusCode," ",request.HttpResponse.StatusLine
+        do request.HttpResponse.OutputHeaders()
+        do request.HttpResponse.OutputToDevice()
+    }
+	quit $$$OK
 }
 
 }

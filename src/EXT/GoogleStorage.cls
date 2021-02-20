@@ -5,6 +5,7 @@ ClassMethod GetFileList(location, ByRef fileList) As %Status
 {
     kill fileList
     //curl -H "Authorization: Bearer $TOKEN" "https://storage.googleapis.com/storage/v1/b/iris-external-table/o?prefix="
+    //curl -H "Authorization: Bearer $(gcloud auth print-access-token)" "https://storage.googleapis.com/storage/v1/b/iris-external-table/o?prefix="
     set tmpfilename="gsutil_ls.txt" //##class(%File).TempFilename()
     set args=2
     set args(1)="ls"
