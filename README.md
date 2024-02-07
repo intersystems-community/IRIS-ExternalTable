@@ -2,6 +2,8 @@
 
 ![CI](https://github.com/antonum/IRIS-ExternalTable/workflows/CI/badge.svg)
 
+⚠️ - *please note much of the functionality introduced by this 2020 repository is now offered through [Foreign Tables](https://docs.intersystems.com/irislatest/csp/docbook/DocBook.UI.Page.cls?KEY=GSQL_tables#GSQL_tables_foreign), a built-in feature of IRIS 2023.1 and up*
+
 IRIS External Table allows you to access files in local filesystem and cloud BLOB storage such as AWS S3 and Azure BLOB Storage as regular IRIS SQL tables. The resulting tables can be queried like regular IRIS tables, can be JOINed with other tables, used in subselects, used for bulk loading the data into another place with `INSERT INTO localtable SELECT FROM external_table` etc.
 
 Note that the 
